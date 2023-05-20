@@ -1,41 +1,33 @@
 import winston from 'winston';
+const { combine, timestamp, prettyPrint, errors, printf } = winston.format;
+
+const defaultLogger = [
+  timestamp(),
+  prettyPrint(),
+  errors({ stack: true }),
+  printf((info) => {
+    return `[${info.timestamp}] ${info.level}: ${info.message}`;
+  }),
+];
 
 const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    winston.format.json()
-  ),
-  defaultMeta: { service: 'user-service' },
   transports: [
-    //
-    // - Write all logs with importance level of `error` or less to `error.log`
-    // - Write all logs with importance level of `info` or less to `combined.log`
-    //
-  ],
-});
-
-if (process.env.NODE_ENV == 'development' || process.env.NODE_ENV == 'dev') {
-  logger.add(
     new winston.transports.Console({
-      level: 'debug',
-      format: winston.format.simple(),
-    })
-  );
-} else {
-  logger.add(
+      level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+      format: combine(...defaultLogger),
+    }),
     new winston.transports.File({
       dirname: 'logs',
       filename: 'error.log',
       level: 'error',
-    })
-  );
-  logger.add(
+      format: combine(...defaultLogger),
+    }),
     new winston.transports.File({
       dirname: 'logs',
       filename: 'combined.log',
-    })
-  );
-}
+      format: combine(...defaultLogger),
+    }),
+  ],
+});
 
 export default logger;

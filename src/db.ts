@@ -1,6 +1,7 @@
 import { Database, open, ISqlite } from 'sqlite';
 import sqlite3 from 'sqlite3';
 import { TableEntry, ParsedElement, SQLError, UnwrapPromise } from './types';
+import logger from './logger';
 
 sqlite3.verbose();
 
@@ -142,11 +143,11 @@ class DB {
         const error = err as SQLError;
         if (error.errno == 19) {
           const where = error.message.split(':');
-          console.info(`Duplicate entry in${where[where.length - 1]}`);
+          logger.info(`Duplicate entry in${where[where.length - 1]}`);
         }
         return;
       }
-      console.error(err);
+      logger.error(err);
       return;
     }
   }
