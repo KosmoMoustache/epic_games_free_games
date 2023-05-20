@@ -1,5 +1,5 @@
 freeGamesPromotions.json
-db/database.db
+db/*
 # Logs
 logs
 *.log
