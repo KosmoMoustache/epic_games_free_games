@@ -26,7 +26,8 @@ export function parseRawElement(data: RawElement[]): ParsedElement[] {
       keyImages: el.keyImages.filter(
         (keyImage) =>
           keyImage.type === 'OfferImageWide' ||
-          keyImage.type === 'OfferImageTall'
+          keyImage.type === 'OfferImageTall' ||
+          keyImage.type === 'VaultClosed'
       ),
     });
   });
