@@ -22,7 +22,7 @@ type RawFetchParams = {
   cacheFile?: PathLike;
   write?: PathLike;
 };
-type FetchParams<Cached = false> = Cached extends true
+export type FetchParams<Cached = false> = Cached extends true
   ? RawFetchParams
   : Omit<RawFetchParams, 'cacheFile'>;
 

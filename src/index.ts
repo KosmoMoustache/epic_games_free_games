@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 import axios from 'axios';
 import DB, { openDB } from './db';
-import API, { ResponseCached } from './handlers/api';
+import API, { FetchParams, ResponseCached } from './handlers/api';
 import { parseRawElement } from './handlers/result';
 import { freeGamesPromotions, TableEntry } from './types';
 import WebhookBuilder from './handlers/webhook';
@@ -29,13 +29,13 @@ const api = new API(freeGamesPromotions_url, {
 (async () => {
   const db = new DB(await openDB());
 
-  const result = await api.fetch<freeGamesPromotions>({
-    write: './src/freeGamesPromotions.json',
-  });
-  // await api.fetch<freeGamesPromotions>({
-  //   cacheFile: './src/freeGamesPromotions.json',
-  //   write:'./src/freeGamesPromotions.json'
-  // });
+  const options: FetchParams =
+    process.env.NODE_ENV !== 'production'
+      ? {}
+      : { write: './src/freeGamesPromotions.json' };
+
+  const result = await api.fetch<freeGamesPromotions>(options);
+
   const elements = result.data.data.Catalog.searchStore.elements;
   if (result.status != 200) {
     logger.warn('Error when fetching data', result);
@@ -80,7 +80,21 @@ const api = new API(freeGamesPromotions_url, {
       ).length || notPublished.length;
 
     notPublished.forEach(async (np1, index) => {
-      const e: TableEntry<true>['element'] = JSON.parse(np1.element);
+      let e: TableEntry<true>['element'] = JSON.parse(np1.element);
+
+      console.log(e);
+
+      // If saved data is a Mystery Game, fetch the uncovered data
+      if (e.title == 'Mystery Game') {
+        const result = await api.fetch<freeGamesPromotions>();
+        const elements = result.data.data.Catalog.searchStore.elements;
+        const fetchedElement = elements.find((el) => el.id === e.id);
+
+        if (fetchedElement) {
+          e = parseRawElement([fetchedElement])[0];
+          await db.updateById(e.id, e);
+        }
+      }
 
       if (
         e.upcomingPromotionalOffers &&
@@ -113,6 +127,7 @@ const api = new API(freeGamesPromotions_url, {
         webhook.addImages(
           WebhookBuilder.ImageEmbed(e.keyImages, index, notPublished_Total)
         );
+        db.updateInFuture(e.id, false);
       } else if (
         e.upcomingPromotionalOffers &&
         e.upcomingPromotionalOffers.length >= 1 &&
