@@ -2,7 +2,7 @@ import { AxiosResponse } from 'axios';
 import { freeGamesPromotions } from './types';
 import GameElement from './GameElement';
 
-class Parser {
+export default class Parser {
   /***
    * @throws Error when data.status != 200
    */
@@ -14,5 +14,7 @@ class Parser {
     }
 
     const returnData = data.data.data.Catalog.searchStore.elements;
+
+    return [new GameElement()];
   }
 }
