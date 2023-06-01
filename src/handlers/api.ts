@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { PathLike } from 'fs';
 import { readFile, writeFile } from 'fs/promises';
+import logger from '../logger';
 
 interface API_Data {
   locale: `${string}-${string}`;
@@ -30,9 +31,16 @@ export default class API {
   url: string;
   data: Partial<API_Data>;
 
-  constructor(api_url: string, api_data: Partial<API_Data>) {
+  constructor(api_url: string, api_data: Partial<API_Data>, debug = false) {
     this.url = api_url;
     this.data = api_data;
+
+    if (debug) {
+      axios.interceptors.request.use((request) => {
+        logger.log('Starting Request', JSON.stringify(request, null, 2));
+        return request;
+      });
+    }
   }
 
   /**

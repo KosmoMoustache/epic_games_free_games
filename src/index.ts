@@ -1,5 +1,4 @@
 import * as dotenv from 'dotenv';
-import axios from 'axios';
 import DB, { openDB } from './db';
 import API, { FetchParams, ResponseCached } from './handlers/api';
 import { parseRawElement } from './handlers/result';
@@ -13,18 +12,15 @@ dotenv.config();
 const freeGamesPromotions_url =
   'https://store-site-backend-static-ipv4.ak.epicgames.com/freeGamesPromotions';
 
-if (process.env.AXIOS_DEBUG === 'true') {
-  axios.interceptors.request.use((request) => {
-    logger.log('Starting Request', JSON.stringify(request, null, 2));
-    return request;
-  });
-}
-
-const api = new API(freeGamesPromotions_url, {
-  locale: 'fr-FR',
-  country: 'FR',
-  allowCountries: 'FR',
-});
+const api = new API(
+  freeGamesPromotions_url,
+  {
+    locale: 'fr-FR',
+    country: 'FR',
+    allowCountries: 'FR',
+  },
+  process.env.AXIOS_DEBUG === 'true'
+);
 
 (async () => {
   const db = new DB(await openDB());
@@ -37,18 +33,18 @@ const api = new API(freeGamesPromotions_url, {
   const result = await api.fetch<freeGamesPromotions>(options);
 
   const elements = result.data.data.Catalog.searchStore.elements;
-  if (result.status != 200) {
-    logger.warn('Error when fetching data', result);
-  }
-  if (result.statusText == 'Cached')
-    logger.debug(
-      'CachedAt:',
-      new Date(
-        Number(
-          (result as unknown as ResponseCached<freeGamesPromotions>).cachedAt
-        )
-      )
-    );
+  // if (result.status != 200) {
+  //   logger.warn('Error when fetching data', result);
+  // }
+  // if (result.statusText == 'Cached')
+  //   logger.debug(
+  //     'CachedAt:',
+  //     new Date(
+  //       Number(
+  //         (result as unknown as ResponseCached<freeGamesPromotions>).cachedAt
+  //       )
+  //     )
+  //   );
 
   const parsedElements = parseRawElement(
     elements /* elements.filter((el) => el.offerType == 'BASE_GAME') */
@@ -94,6 +90,8 @@ const api = new API(freeGamesPromotions_url, {
           e = parseRawElement([fetchedElement])[0];
           await db.updateById(e.id, e);
         }
+      } else {
+        db.updatePublishedState(e.id);
       }
 
       if (
@@ -148,7 +146,6 @@ const api = new API(freeGamesPromotions_url, {
         db.updateInFuture(e.id, false);
       }
 
-      db.updatePublishedState(e.id);
       webhook.timestamp = new Date().toISOString();
     });
     if (webhook.description.length > 1) {
