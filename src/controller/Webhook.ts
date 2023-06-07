@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { keyImage } from '../types';
+import { dateToLocalString } from '../utils';
+import logger from '../logger';
 
 type ImageField = { url: string };
 interface ImageEmbed {
@@ -30,6 +32,7 @@ export default class WebhookBuilder {
   images: ImageEmbed[];
   footer: string;
   timestamp: string;
+  avatar_url?: string;
   constructor() {
     this.images = [];
 
@@ -39,6 +42,8 @@ export default class WebhookBuilder {
     this.url = 'https://store.epicgames.com/fr/';
     this.footer = '';
     this.timestamp = '';
+    this.avatar_url =
+      'https://raw.githubusercontent.com/KosmoMoustache/epic_games_free_games/main/profile_picture.png';
   }
 
   /**
@@ -63,6 +68,7 @@ export default class WebhookBuilder {
     return {
       content: '',
       username: this.username,
+      avatar_url: this.avatar_url,
       embeds: [
         {
           title: this.title,
@@ -93,43 +99,60 @@ export default class WebhookBuilder {
   ): ImageEmbed {
     let keyImage: keyImage;
 
+    const getDefaultImage = () => {
+      keyImage = keyImages[0];
+      logger.verbose('No image found, using default wide image');
+    };
+
     switch (total) {
       case 1: {
         keyImage = keyImages.filter((f) => f.type == 'OfferImageTall')[0];
-        if (!keyImage) keyImage = keyImages[0];
+        if (!keyImage) getDefaultImage();
         break;
       }
       case 2: {
         keyImage = keyImages.filter((f) => f.type == 'OfferImageTall')[0];
-        if (!keyImage) keyImage = keyImages[0];
+        if (!keyImage) getDefaultImage();
         break;
       }
       case 3: {
         if (index === 1) {
           keyImage = keyImages.filter((f) => f.type == 'OfferImageWide')[0];
-          if (!keyImage) keyImage = keyImages[0];
+          if (!keyImage) getDefaultImage();
           break;
         }
         keyImage = keyImages.filter((f) => f.type == 'OfferImageWide')[0];
-        if (!keyImage) keyImage = keyImages[0];
+        if (!keyImage) getDefaultImage();
         break;
       }
       case 4: {
         keyImage = keyImages.filter((f) => f.type == 'OfferImageWide')[0];
-        if (!keyImage) keyImage = keyImages[0];
+        if (!keyImage) getDefaultImage();
         break;
       }
       default: {
         keyImage = keyImages.filter((f) => f.type == 'OfferImageWide')[0];
-        if (!keyImage) keyImage = keyImages[0];
+        if (!keyImage) getDefaultImage();
         break;
       }
     }
+
     return {
       url: url,
       image: {
         url: keyImage.url,
       },
     };
+  }
+
+  static formatDescription(
+    title: string,
+    date1: Date,
+    date2: Date,
+    pageSlug?: string
+  ): string {
+    return `**${title}**: du ${dateToLocalString(date1)} au ${dateToLocalString(
+      date2
+    )} ${pageSlug ? `https://store.epicgames.com/fr/p/${pageSlug}` : ''}\n`;
   }
 }

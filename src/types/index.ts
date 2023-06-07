@@ -35,8 +35,8 @@ export type PromotionalOfferDates = Pick<
 >;
 
 export interface ParsedPromotionalOffer {
-  startDate: string | Date;
-  endDate: string | Date;
+  startDate: Date;
+  endDate: Date;
   discountPercentage: number;
   inFuture: boolean;
 }
