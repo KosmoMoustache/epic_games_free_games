@@ -101,7 +101,7 @@ export default class WebhookBuilder {
 
     const getDefaultImage = () => {
       keyImage = keyImages[0];
-      logger.verbose('No image found, using default wide image');
+      logger.debug('No image found, using default wide image');
     };
 
     switch (total) {
