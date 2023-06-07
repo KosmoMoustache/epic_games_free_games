@@ -10,7 +10,7 @@ import { getApiResult } from './utils';
 
 dotenv.config();
 
-const USE_CACHE = true;
+const USE_CACHE = false;
 
 const api_endpoint =
   'https://store-site-backend-static-ipv4.ak.epicgames.com/freeGamesPromotions';
