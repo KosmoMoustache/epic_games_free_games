@@ -43,7 +43,7 @@ export default class DB {
         logger.info(`Duplicate entry in${where[where.length - 1]}`);
       }
 
-      logger.error('Unexpected error', err);
+      logger.error('[Database.try] error', err);
       return;
     }
   }
