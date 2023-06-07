@@ -26,6 +26,7 @@ export interface element {
   effectiveDate: string | Date;
   offerType: string | 'OTHERS' | 'DLC' | 'BASE_GAME';
   expiryDate: null;
+  viewableDate: string | Date; // new
   status: string | 'ACTIVE';
   isCodeRedemptionOnly: boolean;
   keyImages: keyImage[];
@@ -40,11 +41,13 @@ export interface element {
     id: string;
     namespace: string | 'catnip';
   }>;
-  customAttributes: Array<{
-    key: string;
-    value: string;
-  }>;
-  categories: Array<Record<'path', string>>;
+  customAttributes: Array<customAttributes>;
+  categories: Array<
+    Record<
+      'path',
+      'freegames/vaulted' | 'freegames' | 'games' | 'application' | string
+    >
+  >;
   tags: Array<Record<'id', string>>;
   catalogNs: {
     mappings: Array<{
@@ -86,7 +89,12 @@ export interface element {
 }
 
 export interface keyImage {
-  type: 'OfferImageWide' | 'OfferImageTall' | 'Thumbnail' | string;
+  type:
+    | 'OfferImageWide'
+    | 'OfferImageTall'
+    | 'Thumbnail'
+    | 'VaultClosed'
+    | string;
   url: string;
 }
 
@@ -106,3 +114,13 @@ export interface PromotionalOffer {
     discountPercentage: number;
   };
 }
+
+type customAttributes = {
+  key:
+    | 'com.epicgames.app.freegames.vault.close'
+    | 'com.epicgames.app.blacklist'
+    | 'com.epicgames.app.freegames.vault.slug'
+    | 'com.epicgames.app.freegames.vault.open'
+    | 'com.epicgames.app.productSlug';
+  value: string;
+};
