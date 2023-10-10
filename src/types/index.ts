@@ -40,3 +40,13 @@ export interface ParsedPromotionalOffer {
   discountPercentage: number;
   inFuture: boolean;
 }
+
+export enum DiscordTimestampType {
+  R = 'R', // Relative
+  t = 't', // Short Time
+  T = 'T', // Long Time
+  d = 'd', // Short Date
+  D = 'D', // Long Date
+  f = 'f', //'Long Date with Short Time
+  F = 'F', //'Long Date with Day of the week, Short Time
+}
