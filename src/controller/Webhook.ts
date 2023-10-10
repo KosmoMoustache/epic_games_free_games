@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { keyImage } from '../types';
-import { dateToLocalString } from '../utils';
+import { DiscordTimestampType, keyImage } from '../types';
+import { dateToLocalString, discordTimestamp } from '../utils';
 import logger from '../logger';
 
 type ImageField = { url: string };
@@ -151,8 +151,11 @@ export default class WebhookBuilder {
     date2: Date,
     pageSlug?: string
   ): string {
-    return `**${title}**: du ${dateToLocalString(date1)} au ${dateToLocalString(
-      date2
-    )} ${pageSlug ? `https://store.epicgames.com/fr/p/${pageSlug}` : ''}\n`;
+    return `**${title}**: du ${discordTimestamp(
+      date1,
+      DiscordTimestampType.f
+    )} au ${discordTimestamp(date2, DiscordTimestampType.f)} ${
+      pageSlug ? `https://store.epicgames.com/fr/p/${pageSlug}` : ''
+    }\n`;
   }
 }

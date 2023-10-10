@@ -2,7 +2,7 @@ import { AxiosResponse } from 'axios';
 import { readFileSync } from 'fs';
 import logger from './logger';
 import type API from './controller/API';
-import { freeGamesPromotions } from './types';
+import { DiscordTimestampType, freeGamesPromotions } from './types';
 
 /**
  *
@@ -58,4 +58,11 @@ export async function getApiResult(api: API, use_cache = true) {
     }
     return result;
   }
+}
+
+export function discordTimestamp(
+  date: Date,
+  type: DiscordTimestampType
+): `<t:${number}:${DiscordTimestampType}>` {
+  return `<t:${date.getTime() / 1000}:${type}>`;
 }
