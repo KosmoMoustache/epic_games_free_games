@@ -16,7 +16,7 @@
   "author": "KosmoMoustache",
   "license": "MIT",
   "dependencies": {
-    "axios": "^1.5.1",
+    "axios": "^1.6.0",
     "dotenv": "^16.3.1",
     "lint": "^0.8.19",
     "sqlite": "^4.2.1",
