@@ -73,6 +73,7 @@ export default class GameElement {
         'OfferImage',
         'OfferImageWide',
         'OfferImageTall',
+        'DieselStoreFrontWide',
         'VaultClosed',
       ].includes(keyImage.type)
     );
