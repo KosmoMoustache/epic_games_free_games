@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { DiscordTimestampType, keyImage } from '../types';
-import { dateToLocalString, discordTimestamp } from '../utils';
+import { discordTimestamp } from '../utils';
 import logger from '../logger';
 
 type ImageField = { url: string };
