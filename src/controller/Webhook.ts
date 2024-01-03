@@ -65,7 +65,7 @@ export default class WebhookBuilder {
   }
 
   private build(): DiscordWebhookData {
-    return {
+    const template: DiscordWebhookData = {
       content: '',
       username: this.username,
       avatar_url: this.avatar_url,
@@ -79,9 +79,20 @@ export default class WebhookBuilder {
           },
           timestamp: this.timestamp,
         },
-        ...this.images,
       ],
     };
+
+    if (this.images.length >= 2) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      template.embeds!.push(...this.images);
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      template.embeds![0].image = {
+        url: this.images[0].image.url,
+      };
+    }
+
+    return template;
   }
 
   /**

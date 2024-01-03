@@ -110,6 +110,9 @@ const api = new API(
   for (let i = 0; i < upcomingToPublish.length; i++) {
     const id = upcomingToPublish[i];
     const element = elements.filter((el) => el.id == id)[0];
+    // Skip sending webhook of mystery games
+    if (element.title.includes('Mystery Game')) continue;
+
     webhook.description += '*(Bientôt)* ';
     webhook.description += WebhookBuilder.formatDescription(
       element.title,
