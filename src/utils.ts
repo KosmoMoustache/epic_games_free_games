@@ -1,8 +1,9 @@
 import type { AxiosResponse } from 'axios';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import logger from './logger';
 import type API from './controller/API';
 import type { DiscordTimestampType, freeGamesPromotions } from './types';
+import DB from './controller/Database';
 
 /**
  *
@@ -44,7 +45,10 @@ export function dateToLocalString(date: Date | string) {
 
 export async function getApiResult(api: API, use_cache = true) {
   if (use_cache) {
-    // Get from cache
+    const data = JSON.parse(readFileSync('./src/freeGamesPromotions.json', 'utf-8'));
+    // Create cache file if not exist
+    if (!data) writeFileSync('./src/freeGamesPromotions.json', JSON.stringify(getApiResult(api, false)));
+
     return {
       data: JSON.parse(readFileSync('./src/freeGamesPromotions.json', 'utf-8')),
     } as unknown as AxiosResponse<freeGamesPromotions>;
@@ -64,4 +68,11 @@ export function discordTimestamp(
   type: DiscordTimestampType
 ): `<t:${number}:${DiscordTimestampType}>` {
   return `<t:${date.getTime() / 1000}:${type}>`;
+}
+
+
+export function debugDatabase(db: DB) {
+  db.published.getAll().then((res) => {
+    logger.table('Published', res);
+  });
 }

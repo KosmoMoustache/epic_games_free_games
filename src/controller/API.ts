@@ -16,7 +16,7 @@ export default class API {
 
     if (debug) {
       axios.interceptors.request.use((request) => {
-        logger.info('Starting Request', JSON.stringify(request, null, 2));
+        logger.info('Starting Request', request);
         return request;
       });
     }
