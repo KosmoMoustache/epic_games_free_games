@@ -5,7 +5,7 @@ import Parser from './controller/Parser';
 import API from './controller/API';
 import WebhookBuilder from './controller/Webhook';
 import { State } from './controller/GameElement';
-import { getApiResult } from './utils';
+import { debugDatabase, getApiResult } from './utils';
 import { get } from './env';
 
 const USE_CACHE = false;
@@ -35,6 +35,8 @@ if (get('WEBHOOK_URL') === undefined) {
   const elements = Parser.response(await getApiResult(api, USE_CACHE));
   const failed: string[] = []; // already in db
   const success: string[] = []; // new game
+
+  if (get('DEV') === true) debugDatabase(db);
 
   //
   for (let i = 0; i < elements.length; i++) {

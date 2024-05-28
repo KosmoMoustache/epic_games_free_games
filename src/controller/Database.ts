@@ -143,7 +143,7 @@ class PublishedEntryQuery {
 
     if (!query) return false;
 
-    return query.published;
+    return query.published === false ? true : false;
   }
 
   async updatePublishedStateByGameId(
