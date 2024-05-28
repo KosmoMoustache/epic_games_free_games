@@ -47,7 +47,6 @@ export async function getApiResult(api: API, use_cache = true) {
     // Get from cache
     return {
       data: JSON.parse(readFileSync('./src/freeGamesPromotions.json', 'utf-8')),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as unknown as AxiosResponse<freeGamesPromotions>;
   }
 

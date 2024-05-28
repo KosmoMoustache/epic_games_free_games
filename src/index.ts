@@ -1,5 +1,4 @@
 import type { SQLError } from './types';
-import * as dotenv from 'dotenv';
 import DB from './controller/Database';
 import logger from './logger';
 import Parser from './controller/Parser';
@@ -7,8 +6,7 @@ import API from './controller/API';
 import WebhookBuilder from './controller/Webhook';
 import { State } from './controller/GameElement';
 import { getApiResult } from './utils';
-
-dotenv.config();
+import { get } from './env';
 
 const USE_CACHE = false;
 
@@ -22,8 +20,13 @@ const api = new API(
     country: 'FR',
     allowCountries: 'FR',
   },
-  process.env.AXIOS_DEBUG === 'true'
+  get('AXIOS_DEBUG') === 'true'
 );
+
+if (get('WEBHOOK_URL') === undefined) {
+  logger.error('WEBHOOK_URL is missing');
+  process.exit(1);
+}
 
 (async () => {
   const db = new DB(await DB.openDB());
@@ -88,12 +91,10 @@ const api = new API(
     const element = elements.filter((el) => el.id === id)[0];
     webhook.description += WebhookBuilder.formatDescription(
       element.title,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       // biome-ignore lint/style/noNonNullAssertion: typing is hard
-            element.promotions.promotionalOffers!.startDate,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      element.promotions.promotionalOffers!.startDate,
       // biome-ignore lint/style/noNonNullAssertion: typing is hard
-            element.promotions.promotionalOffers!.endDate,
+      element.promotions.promotionalOffers!.endDate,
       element.productSlug
     );
 
@@ -118,10 +119,8 @@ const api = new API(
     webhook.description += '*(Bientôt)* ';
     webhook.description += WebhookBuilder.formatDescription(
       element.title,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       // biome-ignore lint/style/noNonNullAssertion: typing is hard
       element.promotions.upcomingPromotionalOffers!.startDate,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       // biome-ignore lint/style/noNonNullAssertion: typing is hard
       element.promotions.upcomingPromotionalOffers!.endDate
     );
@@ -140,6 +139,6 @@ const api = new API(
   if (webhook.description.length > 1) {
     webhook.timestamp = new Date().toISOString();
     logger.info('Sending webhook');
-    await webhook.send(process.env.WEBHOOK_URL);
+    await webhook.send(get('WEBHOOK_URL'));
   }
 })();
