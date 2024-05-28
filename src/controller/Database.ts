@@ -134,16 +134,13 @@ class PublishedEntryQuery {
       inFuture
     );
   }
-
   async isPublished(game_id: PublishedEntry['game_id']): Promise<boolean> {
     const query = await this.db.get<PublishedEntry>(
       `SELECT published FROM ${this.tableName} WHERE game_id = ?`,
       game_id
     );
 
-    if (!query) return false;
-
-    return query.published === false ? true : false;
+    return (typeof query !== 'undefined' && (query.published as unknown as 1 || 0) === 1) ? true : false;
   }
 
   async updatePublishedStateByGameId(
