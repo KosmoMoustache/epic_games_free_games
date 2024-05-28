@@ -1,10 +1,10 @@
+import type { element, keyImage } from '../types';
 import Parser from './Parser';
-import { element, keyImage } from '../types';
 
 export enum State {
-  AVAILABLE_NOW,
-  UPCOMING,
-  NONE,
+  AVAILABLE_NOW = 0,
+  UPCOMING = 1,
+  NONE = 2,
 }
 
 export type GameElementJSON = {

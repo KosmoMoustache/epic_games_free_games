@@ -1,4 +1,4 @@
-import { GameElementJSON } from '../controller/GameElement';
+import type { GameElementJSON } from '../controller/GameElement';
 
 /**
  * @deprecated

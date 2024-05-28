@@ -1,4 +1,4 @@
-import { element, keyImage, PromotionalOffer } from './freeGamesPromotions';
+import type { element, keyImage, PromotionalOffer } from './freeGamesPromotions';
 
 export * from './freeGamesPromotions';
 

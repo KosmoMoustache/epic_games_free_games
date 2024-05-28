@@ -1,8 +1,8 @@
-import { AxiosResponse } from 'axios';
-import { readFileSync } from 'fs';
+import type { AxiosResponse } from 'axios';
+import { readFileSync } from 'node:fs';
 import logger from './logger';
 import type API from './controller/API';
-import { DiscordTimestampType, freeGamesPromotions } from './types';
+import type { DiscordTimestampType, freeGamesPromotions } from './types';
 
 /**
  *
@@ -48,16 +48,16 @@ export async function getApiResult(api: API, use_cache = true) {
     return {
       data: JSON.parse(readFileSync('./src/freeGamesPromotions.json', 'utf-8')),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as unknown as AxiosResponse<freeGamesPromotions, any>;
-  } else {
-    // Get games from api
-    const result = await api.fetch<freeGamesPromotions>();
-    if (result.status != 200) {
-      logger.error('Error when fetching data', result);
-      throw new Error('Error when fetching data');
-    }
-    return result;
+    } as unknown as AxiosResponse<freeGamesPromotions>;
   }
+
+  // Get games from api
+  const result = await api.fetch<freeGamesPromotions>();
+  if (result.status !== 200) {
+    logger.error('Error when fetching data', result);
+    throw new Error('Error when fetching data');
+  }
+  return result;
 }
 
 export function discordTimestamp(

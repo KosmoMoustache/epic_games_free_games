@@ -1,5 +1,6 @@
+import type { keyImage } from '../types';
 import axios from 'axios';
-import { DiscordTimestampType, keyImage } from '../types';
+import { DiscordTimestampType } from '../types';
 import { discordTimestamp } from '../utils';
 import logger from '../logger';
 
@@ -83,10 +84,10 @@ export default class WebhookBuilder {
     };
 
     if (this.images.length >= 2) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      // biome-ignore lint/style/noNonNullAssertion: embeds is declared just above
       template.embeds!.push(...this.images);
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      // biome-ignore lint/style/noNonNullAssertion: embeds is declared just above
       template.embeds![0].image = {
         url: this.images[0].image.url,
       };
@@ -117,32 +118,32 @@ export default class WebhookBuilder {
 
     switch (total) {
       case 1: {
-        keyImage = keyImages.filter((f) => f.type == 'OfferImageTall')[0];
+        keyImage = keyImages.filter((f) => f.type === 'OfferImageTall')[0];
         if (!keyImage) getDefaultImage();
         break;
       }
       case 2: {
-        keyImage = keyImages.filter((f) => f.type == 'OfferImageTall')[0];
+        keyImage = keyImages.filter((f) => f.type === 'OfferImageTall')[0];
         if (!keyImage) getDefaultImage();
         break;
       }
       case 3: {
         if (index === 1) {
-          keyImage = keyImages.filter((f) => f.type == 'OfferImageWide')[0];
+          keyImage = keyImages.filter((f) => f.type === 'OfferImageWide')[0];
           if (!keyImage) getDefaultImage();
           break;
         }
-        keyImage = keyImages.filter((f) => f.type == 'OfferImageWide')[0];
+        keyImage = keyImages.filter((f) => f.type === 'OfferImageWide')[0];
         if (!keyImage) getDefaultImage();
         break;
       }
       case 4: {
-        keyImage = keyImages.filter((f) => f.type == 'OfferImageWide')[0];
+        keyImage = keyImages.filter((f) => f.type === 'OfferImageWide')[0];
         if (!keyImage) getDefaultImage();
         break;
       }
       default: {
-        keyImage = keyImages.filter((f) => f.type == 'OfferImageWide')[0];
+        keyImage = keyImages.filter((f) => f.type === 'OfferImageWide')[0];
         if (!keyImage) getDefaultImage();
         break;
       }

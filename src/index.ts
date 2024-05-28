@@ -1,11 +1,11 @@
+import type { SQLError } from './types';
 import * as dotenv from 'dotenv';
 import DB from './controller/Database';
-import { SQLError } from './types';
 import logger from './logger';
 import Parser from './controller/Parser';
 import API from './controller/API';
-import { State } from './controller/GameElement';
 import WebhookBuilder from './controller/Webhook';
+import { State } from './controller/GameElement';
 import { getApiResult } from './utils';
 
 dotenv.config();
@@ -56,7 +56,7 @@ const api = new API(
 
   for (let i = 0; i < failed.length; i++) {
     const id = failed[i];
-    const _elements = elements.filter((el) => el.id == id);
+    const _elements = elements.filter((el) => el.id === id);
 
     for (let j = 0; j < _elements.length; j++) {
       const el = _elements[j];
@@ -85,13 +85,15 @@ const api = new API(
   // Available now
   for (let i = 0; i < toPublish.length; i++) {
     const id = toPublish[i];
-    const element = elements.filter((el) => el.id == id)[0];
+    const element = elements.filter((el) => el.id === id)[0];
     webhook.description += WebhookBuilder.formatDescription(
       element.title,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      element.promotions.promotionalOffers!.startDate,
+      // biome-ignore lint/style/noNonNullAssertion: typing is hard
+            element.promotions.promotionalOffers!.startDate,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      element.promotions.promotionalOffers!.endDate,
+      // biome-ignore lint/style/noNonNullAssertion: typing is hard
+            element.promotions.promotionalOffers!.endDate,
       element.productSlug
     );
 
@@ -109,7 +111,7 @@ const api = new API(
   // upcoming now
   for (let i = 0; i < upcomingToPublish.length; i++) {
     const id = upcomingToPublish[i];
-    const element = elements.filter((el) => el.id == id)[0];
+    const element = elements.filter((el) => el.id === id)[0];
     // Skip sending webhook of mystery games
     if (element.title.includes('Mystery Game')) continue;
 
@@ -117,8 +119,10 @@ const api = new API(
     webhook.description += WebhookBuilder.formatDescription(
       element.title,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      // biome-ignore lint/style/noNonNullAssertion: typing is hard
       element.promotions.upcomingPromotionalOffers!.startDate,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      // biome-ignore lint/style/noNonNullAssertion: typing is hard
       element.promotions.upcomingPromotionalOffers!.endDate
     );
 

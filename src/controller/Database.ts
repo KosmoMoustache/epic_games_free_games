@@ -1,7 +1,8 @@
-import { Database, open, ISqlite } from 'sqlite';
-import sqlite3 from 'sqlite3';
+import type { Database, ISqlite } from 'sqlite';
 import type { SQLError, UnwrapPromise } from '../types';
-import { type PublishedEntry } from '../types/table';
+import type { PublishedEntry } from '../types/table';
+import sqlite3 from 'sqlite3';
+import { open } from 'sqlite';
 import logger from '../logger';
 
 //?
@@ -53,7 +54,7 @@ export default class DB {
     return false;
   }
   static isDuplicateError(err: SQLError): boolean {
-    if (err.errno == 19) return true;
+    if (err.errno === 19) return true;
     return false;
   }
 
@@ -80,12 +81,13 @@ class UpcomingEntryQuery {
   }
 
   async isPublished(game_id: PublishedEntry['game_id']): Promise<boolean> {
-    const query = await this.db.get(
+    const query = await this.db.get<PublishedEntry>(
       `SELECT inFuture FROM ${this.tableName} WHERE game_id = ?`,
       game_id
     );
 
-    return query.inFuture == 1 ? true : false;
+    if (!query) return false;
+    return query.inFuture;
   }
 
   async updatePublishedStateByGameId(
@@ -108,7 +110,9 @@ class PublishedEntryQuery {
   }
 
   async getAll(): Promise<PublishedEntry[] | undefined> {
-    return await this.db.all(`SELECT * FROM ${this.tableName}`);
+    return await this.db.all<PublishedEntry[]>(
+      `SELECT * FROM ${this.tableName}`
+    );
   }
 
   /**
@@ -132,12 +136,14 @@ class PublishedEntryQuery {
   }
 
   async isPublished(game_id: PublishedEntry['game_id']): Promise<boolean> {
-    const query = await this.db.get(
+    const query = await this.db.get<PublishedEntry>(
       `SELECT published FROM ${this.tableName} WHERE game_id = ?`,
       game_id
     );
 
-    return query.published == 1 ? true : false;
+    if (!query) return false;
+
+    return query.published;
   }
 
   async updatePublishedStateByGameId(

@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import winston from 'winston';
+
 const { combine, timestamp, prettyPrint, errors, printf } = winston.format;
 
 const defaultLogger = [
@@ -40,18 +40,20 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 class Logger {
+  // biome-ignore lint/suspicious/noExplicitAny: winston take any as meta parameter
   static debug(message: string, ...args: any[]) {
     logger.debug(message, { keys: args });
   }
 
+  // biome-ignore lint/suspicious/noExplicitAny: winston take any as meta parameter
   static info(message: string, ...args: any[]) {
     logger.info(message, { keys: args });
   }
-
+  // biome-ignore lint/suspicious/noExplicitAny: winston take any as meta parameter
   static warn(message: string, ...args: any[]) {
     logger.warn(message, { keys: args });
   }
-
+  // biome-ignore lint/suspicious/noExplicitAny: winston take any as meta parameter
   static error(message: string, ...args: any[]) {
     logger.error(message, { keys: args });
   }
