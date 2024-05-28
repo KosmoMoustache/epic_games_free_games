@@ -42,6 +42,11 @@ if (get('NODE_ENV') === 'production') {
 
 class Logger {
   // biome-ignore lint/suspicious/noExplicitAny: winston take any as meta parameter
+  static table(message: string, args: any[] | undefined) {
+    logger.debug(message, { keys: args });
+    console.table(args);
+  }
+  // biome-ignore lint/suspicious/noExplicitAny: winston take any as meta parameter
   static debug(message: string, ...args: any[]) {
     logger.debug(message, { keys: args });
   }
