@@ -1,4 +1,5 @@
 import winston from 'winston';
+import { get } from './env';
 
 const { combine, timestamp, prettyPrint, errors, printf } = winston.format;
 
@@ -16,13 +17,13 @@ const defaultLogger = [
 const logger = winston.createLogger({
   transports: [
     new winston.transports.Console({
-      level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+      level: get('NODE_ENV') === 'production' ? 'info' : 'debug',
       format: combine(...defaultLogger),
     }),
   ],
 });
 
-if (process.env.NODE_ENV === 'production') {
+if (get('NODE_ENV') === 'production') {
   logger.transports.push(
     new winston.transports.File({
       dirname: 'logs',
