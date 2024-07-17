@@ -1,24 +1,25 @@
-import axios from 'axios';
-import logger from '../logger';
+import axios from 'axios'
+import logger from '../logger.js'
 
 export interface AxiosRequestData {
-  locale: `${string}-${string}`;
-  country: string;
-  allowCountries: string;
+  locale: `${string}-${string}`
+  country: string
+  allowCountries: string
 }
 
 export default class API {
-  url: string;
-  request_data: AxiosRequestData;
+  url: string
+  request_data: AxiosRequestData
   constructor(url: string, request_data: AxiosRequestData, debug: boolean) {
-    this.url = url;
-    this.request_data = request_data;
+    this.url = url
+    this.request_data = request_data
 
     if (debug) {
-      axios.interceptors.request.use((request) => {
-        logger.info('Starting Request', request);
-        return request;
-      });
+      axios.interceptors.request.use(request => {
+        logger.info('Starting Request', request.url)
+        logger.debug('Request data', request)
+        return request
+      })
     }
   }
 
@@ -28,6 +29,6 @@ export default class API {
       headers: {
         'Content-Type': 'application/json',
       },
-    });
+    })
   }
 }

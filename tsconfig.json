@@ -1,32 +1,57 @@
-// https://www.typescriptlang.org/docs/handbook/tsconfig-json.html
+// // https://www.typescriptlang.org/docs/handbook/tsconfig-json.html
+// {
+//   "files": ["global.d.ts"],
+//   "include": ["./", "./src/**/*"],
+//   "ts-node": {
+//     "transpileOnly": true
+//   },
+//   "compilerOptions": {
+//     /* Visit https://aka.ms/tsconfig to read more about this file */
+//     "lib": ["ESNext"],
+//     "target": "ESNext",
+//     "module": "ESNext",
+//     "rootDir": "./src",
+//     "types": ["node"],
+//     "outDir": "dist",
+//     "newLine": "crlf",
+//     "esModuleInterop": true,
+//     "forceConsistentCasingInFileNames": true,
+//     "strict": true,
+//     "skipLibCheck": true,
+//     "sourceMap": true
+//   }
+// }
+
 {
-  "files": [
-    "global.d.ts"
-  ],
-  "include": [
-    "./",
-    "./src/**/*"
-  ],
-  "ts-node": {
-    "transpileOnly": true
-  },
-  "compilerOptions": {
-    /* Visit https://aka.ms/tsconfig to read more about this file */
-    "lib": [
-      "ES2020"
-    ],
-    "target": "es2016",
-    "module": "CommonJS",
-    "rootDir": "./src",
-    "types": [
-      "node"
-    ],
-    "outDir": "dist",
-    "newLine": "crlf",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "sourceMap": true
-  }
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "NodeNext",
+		"lib": ["ESNext"],
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"isolatedModules": true,
+		"removeComments": true,
+		"esModuleInterop": true,
+		"strictNullChecks": true,
+		"allowSyntheticDefaultImports": true,
+		"forceConsistentCasingInFileNames": true,
+		"strictPropertyInitialization": true,
+		"experimentalDecorators": true,
+		"noImplicitAny": true,
+		"strictBindCallApply": true,
+		"strictFunctionTypes": true,
+		"noImplicitThis": true,
+		"skipLibCheck": true,
+
+		"declaration": false,
+		"sourceMap": true,
+		"emitDecoratorMetadata": true,
+		"types": ["@types/node"],
+
+		"rootDir": "./src",
+		"outDir": "./dist"
+	},
+	"ts-node": {
+		"swc": true
+	}
 }

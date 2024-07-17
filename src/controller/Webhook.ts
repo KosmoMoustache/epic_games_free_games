@@ -1,50 +1,50 @@
-import type { keyImage } from '../types';
-import axios from 'axios';
-import { DiscordTimestampType } from '../types';
-import { discordTimestamp } from '../utils';
-import logger from '../logger';
+import axios from 'axios'
+import logger from '../logger.js'
+import type { keyImage } from '../types/index.js'
+import { DiscordTimestampType } from '../types/index.js'
+import { discordTimestamp } from '../utils.js'
 
-type ImageField = { url: string };
+type ImageField = { url: string }
 interface ImageEmbed {
-  url: string;
-  image: ImageField;
+  url: string
+  image: ImageField
 }
 interface DiscordWebhookData {
-  content: string;
-  username: string;
-  embeds?: DiscordWebhookEmbeds[];
-  avatar_url?: string;
+  content: string
+  username: string
+  embeds?: DiscordWebhookEmbeds[]
+  avatar_url?: string
 }
 interface DiscordWebhookEmbeds extends Partial<ImageEmbed> {
-  title?: string;
-  description?: string;
-  color?: string;
+  title?: string
+  description?: string
+  color?: string
   footer?: {
-    text: string | Date;
-  };
-  timestamp?: string;
+    text: string | Date
+  }
+  timestamp?: string
 }
 
 export default class WebhookBuilder {
-  title: string;
-  username: string;
-  url: string;
-  description: string;
-  images: ImageEmbed[];
-  footer: string;
-  timestamp: string;
-  avatar_url?: string;
+  title: string
+  username: string
+  url: string
+  description: string
+  images: ImageEmbed[]
+  footer: string
+  timestamp: string
+  avatar_url?: string
   constructor() {
-    this.images = [];
+    this.images = []
 
-    this.title = '[Epic Games]';
-    this.username = 'Game Deals';
-    this.description = '';
-    this.url = 'https://store.epicgames.com/fr/';
-    this.footer = '';
-    this.timestamp = '';
+    this.title = '[Epic Games]'
+    this.username = 'Game Deals'
+    this.description = ''
+    this.url = 'https://store.epicgames.com/fr/'
+    this.footer = ''
+    this.timestamp = ''
     this.avatar_url =
-      'https://raw.githubusercontent.com/KosmoMoustache/epic_games_free_games/main/profile_picture.png';
+      'https://raw.githubusercontent.com/KosmoMoustache/epic_games_free_games/main/profile_picture.png'
   }
 
   /**
@@ -52,7 +52,7 @@ export default class WebhookBuilder {
    * @param imageEmbed
    */
   addImages(imageEmbed: ImageEmbed) {
-    this.images.push(imageEmbed);
+    this.images.push(imageEmbed)
   }
 
   /**
@@ -62,7 +62,7 @@ export default class WebhookBuilder {
   async send(url: string): Promise<void> {
     await axios.post(url, {
       ...this.build(),
-    });
+    })
   }
 
   private build(): DiscordWebhookData {
@@ -81,19 +81,19 @@ export default class WebhookBuilder {
           timestamp: this.timestamp,
         },
       ],
-    };
+    }
 
     if (this.images.length >= 2) {
       // biome-ignore lint/style/noNonNullAssertion: embeds is declared just above
-      template.embeds!.push(...this.images);
+      template.embeds!.push(...this.images)
     } else {
       // biome-ignore lint/style/noNonNullAssertion: embeds is declared just above
       template.embeds![0].image = {
         url: this.images[0].image.url,
-      };
+      }
     }
 
-    return template;
+    return template
   }
 
   /**
@@ -107,45 +107,45 @@ export default class WebhookBuilder {
     keyImages: keyImage[],
     index: number,
     total: number,
-    url = 'https://store.epicgames.com/fr/'
+    url = 'https://store.epicgames.com/fr/',
   ): ImageEmbed {
-    let keyImage: keyImage;
+    let keyImage: keyImage
 
     const getDefaultImage = () => {
-      keyImage = keyImages[0];
-      logger.debug('No image found, using default wide image');
-    };
+      keyImage = keyImages[0]
+      logger.debug('No image found, using default wide image')
+    }
 
     switch (total) {
       case 1: {
-        keyImage = keyImages.filter((f) => f.type === 'OfferImageTall')[0];
-        if (!keyImage) getDefaultImage();
-        break;
+        keyImage = keyImages.filter(f => f.type === 'OfferImageTall')[0]
+        if (!keyImage) getDefaultImage()
+        break
       }
       case 2: {
-        keyImage = keyImages.filter((f) => f.type === 'OfferImageTall')[0];
-        if (!keyImage) getDefaultImage();
-        break;
+        keyImage = keyImages.filter(f => f.type === 'OfferImageTall')[0]
+        if (!keyImage) getDefaultImage()
+        break
       }
       case 3: {
         if (index === 1) {
-          keyImage = keyImages.filter((f) => f.type === 'OfferImageWide')[0];
-          if (!keyImage) getDefaultImage();
-          break;
+          keyImage = keyImages.filter(f => f.type === 'OfferImageWide')[0]
+          if (!keyImage) getDefaultImage()
+          break
         }
-        keyImage = keyImages.filter((f) => f.type === 'OfferImageWide')[0];
-        if (!keyImage) getDefaultImage();
-        break;
+        keyImage = keyImages.filter(f => f.type === 'OfferImageWide')[0]
+        if (!keyImage) getDefaultImage()
+        break
       }
       case 4: {
-        keyImage = keyImages.filter((f) => f.type === 'OfferImageWide')[0];
-        if (!keyImage) getDefaultImage();
-        break;
+        keyImage = keyImages.filter(f => f.type === 'OfferImageWide')[0]
+        if (!keyImage) getDefaultImage()
+        break
       }
       default: {
-        keyImage = keyImages.filter((f) => f.type === 'OfferImageWide')[0];
-        if (!keyImage) getDefaultImage();
-        break;
+        keyImage = keyImages.filter(f => f.type === 'OfferImageWide')[0]
+        if (!keyImage) getDefaultImage()
+        break
       }
     }
 
@@ -154,20 +154,20 @@ export default class WebhookBuilder {
       image: {
         url: keyImage.url,
       },
-    };
+    }
   }
 
   static formatDescription(
     title: string,
     date1: Date,
     date2: Date,
-    pageSlug?: string
+    pageSlug?: string,
   ): string {
     return `**${title}**: du ${discordTimestamp(
       date1,
-      DiscordTimestampType.f
+      DiscordTimestampType.f,
     )} au ${discordTimestamp(date2, DiscordTimestampType.f)} ${
       pageSlug ? `https://store.epicgames.com/fr/p/${pageSlug}` : ''
-    }\n`;
+    }\n`
   }
 }
