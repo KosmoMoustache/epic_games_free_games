@@ -14,14 +14,18 @@ git clone https://github.com/KosmoMoustache/epic_games_free_games.git
 pnpm install
 ```
 
-Then, build and run the compiled Typescript
+## Then, build and run the project
 
 ```bash
 pnpm build
 node ./dist/index.js
 ```
 
-You might want write a cron job to execute the script daily
+## Run using a cronjob
+
+```crontab
+0 17 * * * export NODE_ENV='production'; export PATH_TO='path/to/the/project'; cd $PATH_TO; (. ./cronjob.env.sh; ./script.sh >> $PATH_TO/logs/cron-`date +\%m-\%Y`.log; )
+```
 
 # License
 
