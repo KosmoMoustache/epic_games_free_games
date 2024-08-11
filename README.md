@@ -24,7 +24,7 @@ node ./dist/index.js
 ## Run using a cronjob
 
 ```crontab
-0 17 * * * export NODE_ENV='production'; export PATH_TO='path/to/the/project'; cd $PATH_TO; (. ./cronjob.env.sh; ./script.sh >> $PATH_TO/logs/cron-`date +\%m-\%Y`.log; )
+0 17 * * * export NODE_ENV='production'; export PATH_TO='path/to/the/project'; cd $PATH_TO; (. ./crontab.en.sh; ./start.sh >> $PATH_TO/logs/cron-`date +\%m-\%Y`.log; )
 ```
 
 # License
