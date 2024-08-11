@@ -1,8 +1,12 @@
-import { AxiosResponse } from 'axios';
-import { readFileSync } from 'fs';
-import logger from './logger';
-import type API from './controller/API';
-import { DiscordTimestampType, freeGamesPromotions } from './types';
+import { readFileSync, writeFileSync } from 'node:fs'
+import type { AxiosResponse } from 'axios'
+import type API from './controller/API.js'
+import type DB from './controller/Database.js'
+import logger from './logger.js'
+import type {
+  DiscordTimestampType,
+  freeGamesPromotions,
+} from './types/index.js'
 
 /**
  *
@@ -22,11 +26,11 @@ import { DiscordTimestampType, freeGamesPromotions } from './types';
  */
 export function selectKeys<T extends object, K extends keyof T>(
   keys: K[],
-  object: T
+  object: T,
 ): Pick<T, K> {
   return Object.fromEntries(
-    Object.entries(object).filter(([key]) => keys.includes(key as K))
-  ) as Pick<T, K>;
+    Object.entries(object).filter(([key]) => keys.includes(key as K)),
+  ) as Pick<T, K>
 }
 
 export function dateToLocalString(date: Date | string) {
@@ -37,32 +41,46 @@ export function dateToLocalString(date: Date | string) {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
-  } as Intl.DateTimeFormatOptions;
+  } as Intl.DateTimeFormatOptions
 
-  return new Date(date).toLocaleDateString('fr-FR', option);
+  return new Date(date).toLocaleDateString('fr-FR', option)
 }
 
 export async function getApiResult(api: API, use_cache = true) {
   if (use_cache) {
-    // Get from cache
+    const data = JSON.parse(
+      readFileSync('./src/freeGamesPromotions.json', 'utf-8'),
+    )
+    // Create cache file if not exist
+    if (!data)
+      writeFileSync(
+        './src/freeGamesPromotions.json',
+        JSON.stringify(getApiResult(api, false)),
+      )
+
     return {
       data: JSON.parse(readFileSync('./src/freeGamesPromotions.json', 'utf-8')),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as unknown as AxiosResponse<freeGamesPromotions, any>;
-  } else {
-    // Get games from api
-    const result = await api.fetch<freeGamesPromotions>();
-    if (result.status != 200) {
-      logger.error('Error when fetching data', result);
-      throw new Error('Error when fetching data');
-    }
-    return result;
+    } as unknown as AxiosResponse<freeGamesPromotions>
   }
+
+  // Get games from api
+  const result = await api.fetch<freeGamesPromotions>()
+  if (result.status !== 200) {
+    logger.error('Error when fetching data', result)
+    throw new Error('Error when fetching data')
+  }
+  return result
 }
 
 export function discordTimestamp(
   date: Date,
-  type: DiscordTimestampType
+  type: DiscordTimestampType,
 ): `<t:${number}:${DiscordTimestampType}>` {
-  return `<t:${date.getTime() / 1000}:${type}>`;
+  return `<t:${date.getTime() / 1000}:${type}>`
+}
+
+export function debugDatabase(db: DB) {
+  db.published.getAll().then(res => {
+    logger.table('Published', res)
+  })
 }

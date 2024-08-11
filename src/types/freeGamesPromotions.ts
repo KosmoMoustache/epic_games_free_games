@@ -1,91 +1,91 @@
 export interface freeGamesPromotions {
   data: {
     Catalog: {
-      searchStore: searchStore;
-    };
-  };
-  extensions: object | unknown;
+      searchStore: searchStore
+    }
+  }
+  extensions: object | unknown
 }
-export default freeGamesPromotions;
+export default freeGamesPromotions
 
 interface searchStore {
-  elements: element[];
+  elements: element[]
   paging: {
-    count: number;
-    total: number;
-  };
+    count: number
+    total: number
+  }
 }
 
 // TODO: refactor
-export type RawElement = element;
+export type RawElement = element
 export interface element {
-  title: string;
-  id: string;
-  namespace: string | 'catnip';
-  description: string;
-  effectiveDate: string | Date;
-  offerType: string | 'OTHERS' | 'DLC' | 'BASE_GAME';
-  expiryDate: null;
-  viewableDate: string | Date; // new
-  status: string | 'ACTIVE';
-  isCodeRedemptionOnly: boolean;
-  keyImages: keyImage[];
+  title: string
+  id: string
+  namespace: string | 'catnip'
+  description: string
+  effectiveDate: string | Date
+  offerType: string | 'OTHERS' | 'DLC' | 'BASE_GAME'
+  expiryDate: null
+  viewableDate: string | Date // new
+  status: string | 'ACTIVE'
+  isCodeRedemptionOnly: boolean
+  keyImages: keyImage[]
   seller: {
-    id: string;
-    name: string;
-  };
-  productSlug: null | string;
-  urlSlug: string;
-  url: null;
+    id: string
+    name: string
+  }
+  productSlug: null | string
+  urlSlug: string
+  url: null
   items: Array<{
-    id: string;
-    namespace: string | 'catnip';
-  }>;
-  customAttributes: Array<customAttributes>;
+    id: string
+    namespace: string | 'catnip'
+  }>
+  customAttributes: Array<customAttributes>
   categories: Array<
     Record<
       'path',
       'freegames/vaulted' | 'freegames' | 'games' | 'application' | string
     >
-  >;
-  tags: Array<Record<'id', string>>;
+  >
+  tags: Array<Record<'id', string>>
   catalogNs: {
     mappings: Array<{
-      pageSlug: string;
-      pageType: string;
-    }>;
-  };
+      pageSlug: string
+      pageType: string
+    }>
+  }
   offerMappings: Array<{
-    pageSlug: string;
-    pageType: string;
-  }>;
+    pageSlug: string
+    pageType: string
+  }>
   price: {
     totalPrice: {
-      discountPrice: number;
-      originalPrice: number;
-      voucherDiscount: number;
-      discount: number;
-      currencyCode: 'EUR' | string;
+      discountPrice: number
+      originalPrice: number
+      voucherDiscount: number
+      discount: number
+      currencyCode: 'EUR' | string
       currencyInfo: {
-        decimals: number;
-      };
+        decimals: number
+      }
       fmtPrice: {
-        originalPrice: string;
-        discountPrice: string;
-        intermediatePrice: string;
-      };
-    };
+        originalPrice: string
+        discountPrice: string
+        intermediatePrice: string
+      }
+    }
     lineOffers: Array<{
       appliedRules: Array<{
-        id: string;
-        endDate: Date | string;
+        id: string
+        endDate: Date | string
         discountSetting: {
-          discountType: 'PERCENTAGE' | string;
-        };
-      }>;
-    }>;
-  };
-  promotions: PromotionsData;
+          discountType: 'PERCENTAGE' | string
+        }
+      }>
+    }>
+  }
+  promotions: PromotionsData
 }
 
 export interface keyImage {
@@ -94,25 +94,25 @@ export interface keyImage {
     | 'OfferImageTall'
     | 'Thumbnail'
     | 'VaultClosed'
-    | string;
-  url: string;
+    | string
+  url: string
 }
 
-export type PromotionsData = Promotions | null;
+export type PromotionsData = Promotions | null
 export interface Promotions {
-  promotionalOffers: PromotionalOffers[];
-  upcomingPromotionalOffers: PromotionalOffers[];
+  promotionalOffers: PromotionalOffers[]
+  upcomingPromotionalOffers: PromotionalOffers[]
 }
 export interface PromotionalOffers {
-  promotionalOffers: PromotionalOffer[];
+  promotionalOffers: PromotionalOffer[]
 }
 export interface PromotionalOffer {
-  startDate: string;
-  endDate: string;
+  startDate: string
+  endDate: string
   discountSetting: {
-    discountType: 'PERCENTAGE' | string;
-    discountPercentage: number;
-  };
+    discountType: 'PERCENTAGE' | string
+    discountPercentage: number
+  }
 }
 
 type customAttributes = {
@@ -121,6 +121,6 @@ type customAttributes = {
     | 'com.epicgames.app.blacklist'
     | 'com.epicgames.app.freegames.vault.slug'
     | 'com.epicgames.app.freegames.vault.open'
-    | 'com.epicgames.app.productSlug';
-  value: string;
-};
+    | 'com.epicgames.app.productSlug'
+  value: string
+}
