@@ -1,8 +1,6 @@
-
 import axios from 'axios'
 import logger from '../logger.js'
-import type { keyImage } from '../types/index.js'
-import { DiscordTimestampType } from '../types/index.js'
+import { discordTimestampType, type keyImage } from '../types/index.js'
 import { discordTimestamp } from '../utils.js'
 
 type ImageField = { url: string }
@@ -166,8 +164,8 @@ export default class WebhookBuilder {
   ): string {
     return `**${title}**: du ${discordTimestamp(
       date1,
-      DiscordTimestampType.f,
-    )} au ${discordTimestamp(date2, DiscordTimestampType.f)} ${
+      discordTimestampType.f,
+    )} au ${discordTimestamp(date2, discordTimestampType.f)} ${
       pageSlug ? `https://store.epicgames.com/fr/p/${pageSlug}` : ''
     }\n`
   }

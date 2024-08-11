@@ -46,22 +46,14 @@ export interface ParsedPromotionalOffer {
   inFuture: boolean
 }
 
-export enum DiscordTimestampType {
-  R = 'R', // Relative
-  t = 't', // Short Time
-  T = 'T', // Long Time
-  d = 'd', // Short Date
-  D = 'D', // Long Date
-  f = 'f', //'Long Date with Short Time
-  F = 'F', //'Long Date with Day of the week, Short Time
-}
-
-export enum DiscordTimestampType {
-  R = 'R', // Relative
-  t = 't', // Short Time
-  T = 'T', // Long Time
-  d = 'd', // Short Date
-  D = 'D', // Long Date
-  f = 'f', //'Long Date with Short Time
-  F = 'F', //'Long Date with Day of the week, Short Time
-}
+export const discordTimestampType = {
+  R: 'R', // Relative
+  t: 't', // Short Time
+  T: 'T', // Long Time
+  d: 'd', // Short Date
+  D: 'D', // Long Date
+  f: 'f', //'Long Date with Short Time
+  F: 'F', //'Long Date with Day of the week, Short Time
+} as const
+export type DiscordTimestampType =
+  (typeof discordTimestampType)[keyof typeof discordTimestampType]
