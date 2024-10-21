@@ -18,6 +18,7 @@ const api = new API(
   get('AXIOS_DEBUG') === 'true',
 )
 
+// TODO: Probably unnecessary, need to be tested
 if (get('WEBHOOK_URL') === undefined) {
   logger.error("Environment variable 'WEBHOOK_URL' is missing")
   process.exit(1)
