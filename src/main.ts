@@ -8,7 +8,13 @@ import logger from './logger.js'
 import type { SQLError } from './types/index.js'
 import { debugDatabase, getApiResult } from './utils.js'
 
-const main = async (api: API, USE_CACHE: boolean) => {
+/**
+ *
+ * @param api API instance
+ * @param USE_CACHE boolean if cache should be used
+ * @returns true if webhook was sent false otherwise
+ */
+const main = async (api: API, USE_CACHE: boolean): Promise<boolean> => {
   const db = new DB(await DB.openDB())
 
   // Parse resulted data
@@ -125,7 +131,10 @@ const main = async (api: API, USE_CACHE: boolean) => {
     webhook.timestamp = new Date().toISOString()
     logger.info('Sending webhook')
     await webhook.send(get('WEBHOOK_URL'))
+    return true
   }
+
+  return false
 }
 
 export default main

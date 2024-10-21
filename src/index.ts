@@ -1,3 +1,4 @@
+import axios from 'axios'
 import API from './controller/API.js'
 import { get } from './env.js'
 import logger from './logger.js'
@@ -24,4 +25,11 @@ if (get('WEBHOOK_URL') === undefined) {
   process.exit(1)
 }
 
-main(api, USE_CACHE)
+main(api, USE_CACHE).then(async result => {
+  if (get('UPTIME_URL') !== undefined) {
+    // biome-ignore lint/style/noNonNullAssertion: string presence is checked in the if statement
+    const url = new URL(get('UPTIME_URL')!)
+    url.searchParams.set('msg', `OK ${result ? 'SEND' : 'NOSEND'}`)
+    await axios.get(url.toString()).catch(e => logger.error(e))
+  }
+})

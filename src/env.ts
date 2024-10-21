@@ -8,6 +8,7 @@ const logger = console
 const schema = {
   NODE_ENV: z.enum(['production', 'development']),
   WEBHOOK_URL: z.string(),
+  UPTIME_URL: z.string().optional(),
   AXIOS_DEBUG: z.string(),
 } as const
 
