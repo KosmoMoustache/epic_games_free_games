@@ -36,7 +36,7 @@ if (get('NODE_ENV') !== 'development') {
     new winston.transports.File({
       dirname: 'logs',
       filename: 'combined.log',
-      level: 'info',
+      level: get('LOG_LEVEL'),
       format: combine(...defaultLogger),
     }),
   )

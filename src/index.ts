@@ -16,7 +16,7 @@ const api = new API(
     country: 'FR',
     allowCountries: 'FR',
   },
-  get('AXIOS_DEBUG') === 'true',
+  get('LOG_LEVEL') === 'debug',
 )
 
 // TODO: Probably unnecessary, need to be tested
@@ -26,10 +26,13 @@ if (get('WEBHOOK_URL') === undefined) {
 }
 
 main(api, USE_CACHE).then(async result => {
-  if (get('UPTIME_URL') !== undefined) {
-    // biome-ignore lint/style/noNonNullAssertion: string presence is checked in the if statement
-    const url = new URL(get('UPTIME_URL')!)
+  const uptime_url = get('UPTIME_URL')
+  if (uptime_url !== undefined) {
+    const url = new URL(uptime_url)
     url.searchParams.set('msg', `OK ${result ? 'SEND' : 'NOSEND'}`)
-    await axios.get(url.toString()).catch(e => logger.error(e))
+    await axios
+      .get(url.toString())
+      .then(r => logger.info(`UPTIME response: ${r.status}`))
+      .catch(e => logger.error(e))
   }
 })

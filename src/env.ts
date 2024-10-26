@@ -9,7 +9,7 @@ const schema = {
   NODE_ENV: z.enum(['production', 'development']),
   WEBHOOK_URL: z.string(),
   UPTIME_URL: z.string().optional(),
-  AXIOS_DEBUG: z.string(),
+  LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
 } as const
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
