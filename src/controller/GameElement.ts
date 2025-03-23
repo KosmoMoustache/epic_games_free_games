@@ -13,7 +13,7 @@ export type GameElementJSON = {
   effectiveDate: Date
   offerType: string
   keyImages: keyImage[]
-  productSlug: string
+  // productSlug: string
   price: {
     originalPrice: number
     discountPrice: number
@@ -77,7 +77,7 @@ export default class GameElement {
         'VaultClosed',
       ].includes(keyImage.type),
     )
-    this.productSlug = Parser.getProductSlug(element)
+    // this.productSlug = Parser.getProductSlug(element)
     this.price = {
       originalPrice: element.price.totalPrice.originalPrice,
       discountPrice: element.price.totalPrice.discountPrice,
@@ -111,7 +111,7 @@ export default class GameElement {
       effectiveDate: this.effectiveDate,
       offerType: this.offerType,
       keyImages: this.keyImages,
-      productSlug: this.productSlug,
+      // productSlug: this.productSlug,
       price: this.price,
       promotions: this.promotions,
     }
