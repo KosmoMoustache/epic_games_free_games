@@ -18,10 +18,18 @@ export default class Parser {
     return returnData.map(el => new GameElement(el))
   }
 
-  static getProductSlug(el: element) {
-    if (el.productSlug) return el.productSlug
-    return el.catalogNs.mappings[0].pageSlug
-  }
+  // static getProductSlug(el: element) {
+  //   if (el.productSlug) {
+  //     return el.productSlug
+  //   }
+  //   if (el.catalogNs.mappings[0]) {
+  //     return el.catalogNs.mappings[0].pageSlug
+  //   }
+  //   if (el.offerMappings[0]) {
+  //     return el.offerMappings[0].pageSlug
+  //   }
+  //   return el.id
+  // }
 
   static getPromotionalOffers(
     offers: PromotionalOffers[],
