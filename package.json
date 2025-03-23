@@ -2,7 +2,7 @@
   "name": "epic_games_free_games",
   "version": "1.0.0",
   "type": "module",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "author": "KosmoMoustache",
   "scripts": {
     "dev": "tsx watch ./src/index.ts --ignore freeGamesPromotions.json",
