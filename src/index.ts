@@ -4,8 +4,6 @@ import { get } from './env.js'
 import logger from './logger.js'
 import main from './main.js'
 
-const USE_CACHE = false
-
 const api_endpoint =
   'https://store-site-backend-static-ipv4.ak.epicgames.com/freeGamesPromotions'
 
@@ -20,7 +18,7 @@ const api = new API(
 )
 
 
-main(api, USE_CACHE).then(async result => {
+main(api, get('USE_CACHE')).then(async result => {
   const uptime_url = get('UPTIME_URL')
   if (uptime_url !== undefined) {
     const url = new URL(uptime_url)

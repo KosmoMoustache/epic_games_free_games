@@ -10,6 +10,7 @@ const schema = {
   WEBHOOK_URL: z.string(),
   UPTIME_URL: z.string().optional(),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+  USE_CACHE: Zboolean(false),
 } as const
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
