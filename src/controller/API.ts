@@ -1,7 +1,7 @@
 import axios from 'axios'
 import logger from '../logger.js'
 
-export interface AxiosRequestData {
+export interface ApiRequestParams {
   locale: `${string}-${string}`
   country: string
   allowCountries: string
@@ -9,10 +9,10 @@ export interface AxiosRequestData {
 
 export default class API {
   url: string
-  request_data: AxiosRequestData
-  constructor(url: string, request_data: AxiosRequestData, debug: boolean) {
+  request_param: ApiRequestParams
+  constructor(url: string, request_param: ApiRequestParams, debug: boolean) {
     this.url = url
-    this.request_data = request_data
+    this.request_param = request_param
 
     if (debug) {
       axios.interceptors.request.use(request => {
@@ -25,7 +25,7 @@ export default class API {
 
   async fetch<T>() {
     return await axios.get<T>(this.url.toString(), {
-      data: this.request_data,
+      params: this.request_param,
       headers: {
         'Content-Type': 'application/json',
       },
