@@ -19,11 +19,6 @@ const api = new API(
   get('LOG_LEVEL') === 'debug',
 )
 
-// TODO: Probably unnecessary, need to be tested
-if (get('WEBHOOK_URL') === undefined) {
-  logger.error("Environment variable 'WEBHOOK_URL' is missing")
-  process.exit(1)
-}
 
 main(api, USE_CACHE).then(async result => {
   const uptime_url = get('UPTIME_URL')

@@ -37,6 +37,7 @@ for (const [key, value] of Object.entries(schema)) {
         logger.error(`-> ${issue.message}`)
       }
     }
+    process.exit(1)
   }
 }
 
