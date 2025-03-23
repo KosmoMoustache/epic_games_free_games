@@ -19,8 +19,24 @@ export default class Parser {
   }
 
   static getProductSlug(el: element) {
-    if (el.productSlug) return el.productSlug
-    return el.catalogNs.mappings[0].pageSlug
+    const test = (
+      t: element['catalogNs']['mappings'] | element['offerMappings'],
+    ) => {
+      if (t != null && t.length >= 1 && t[0].pageSlug) {
+        return true
+      }
+    }
+
+    if (el.productSlug) {
+      return el.productSlug
+    }
+    if (test(el.catalogNs.mappings)) {
+      return el.catalogNs.mappings[0].pageSlug
+    }
+    if (test(el.offerMappings)) {
+      return el.offerMappings[0].pageSlug
+    }
+    return el.id
   }
 
   static getPromotionalOffers(
