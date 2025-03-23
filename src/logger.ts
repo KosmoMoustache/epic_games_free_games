@@ -7,11 +7,12 @@ const { combine, timestamp, prettyPrint, errors, printf, colorize } =
 const defaultLogger = [
   timestamp(),
   prettyPrint(),
-  colorize(),
   errors({ stack: true }),
   printf(info => {
     return `[${info.timestamp}] ${info.level}: ${info.message} ${
-      info.keys ? JSON.stringify(info.keys) : null
+      info.keys && Array.isArray(info.keys) && info.keys.length >= 1
+        ? JSON.stringify(info.keys)
+        : ''
     }`
   }),
 ]
@@ -20,13 +21,8 @@ const logger = winston.createLogger({
   transports: [
     new winston.transports.Console({
       level: get('NODE_ENV') === 'development' ? 'debug' : 'info',
-      format: combine(...defaultLogger),
+      format: combine(...[colorize(), ...defaultLogger]),
     }),
-  ],
-})
-
-if (get('NODE_ENV') !== 'development') {
-  logger.transports.push(
     new winston.transports.File({
       dirname: 'logs',
       filename: 'error.log',
@@ -39,10 +35,9 @@ if (get('NODE_ENV') !== 'development') {
       level: get('LOG_LEVEL'),
       format: combine(...defaultLogger),
     }),
-  )
-}
+  ],
+})
 
-// TODO: Fix, empty square bracket or null at end of log message
 class Logger {
   // biome-ignore lint/suspicious/noExplicitAny: winston take any as meta parameter
   static table(message: string, args: any[] | undefined) {
