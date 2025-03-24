@@ -1,11 +1,11 @@
-import type { element, keyImage } from '../types/index.js'
-import Parser from './Parser.js'
+import type { element, keyImage } from '../types/index.ts'
+import Parser from './Parser.ts'
 
-export enum State {
-  AVAILABLE_NOW = 0,
-  UPCOMING = 1,
-  NONE = 2,
-}
+export const State = {
+  AVAILABLE_NOW: 0,
+  UPCOMING: 1,
+  NONE: 2,
+} as const
 
 export type GameElementJSON = {
   title: string
@@ -98,7 +98,7 @@ export default class GameElement {
     }
   }
 
-  getState(): State {
+  getState(): (typeof State)[keyof typeof State] {
     if (this.promotions.promotionalOffers) return State.AVAILABLE_NOW
     if (this.promotions.upcomingPromotionalOffers) return State.UPCOMING
     return State.NONE

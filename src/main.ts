@@ -1,12 +1,12 @@
-import type API from './controller/API.js'
-import DB from './controller/Database.js'
-import { State } from './controller/GameElement.js'
-import Parser from './controller/Parser.js'
-import WebhookBuilder from './controller/Webhook.js'
-import { get } from './env.js'
-import logger from './logger.js'
-import type { SQLError } from './types/index.js'
-import { debugDatabase, getApiResult } from './utils.js'
+import type API from './controller/API.ts'
+import DB from './controller/Database.ts'
+import { State } from './controller/GameElement.ts'
+import Parser from './controller/Parser.ts'
+import WebhookBuilder from './controller/Webhook.ts'
+import { get } from './env.ts'
+import logger from './logger.ts'
+import type { SQLError } from './types/index.ts'
+import { debugDatabase, getApiResult } from './utils.ts'
 
 /**
  *

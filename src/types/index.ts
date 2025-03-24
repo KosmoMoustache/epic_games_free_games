@@ -2,10 +2,10 @@ import type {
   PromotionalOffer,
   element,
   keyImage,
-} from './freeGamesPromotions.js'
+} from './freeGamesPromotions.ts'
 
-export * from './freeGamesPromotions.js'
-export * from './table.js'
+export * from './freeGamesPromotions.ts'
+export * from './table.ts'
 
 export type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
 export interface SQLError extends Error {

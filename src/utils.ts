@@ -1,12 +1,12 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import type { AxiosResponse } from 'axios'
-import type API from './controller/API.js'
-import type DB from './controller/Database.js'
-import logger from './logger.js'
+import type API from './controller/API.ts'
+import type DB from './controller/Database.ts'
+import logger from './logger.ts'
 import type {
   DiscordTimestampType,
   freeGamesPromotions,
-} from './types/index.js'
+} from './types/index.ts'
 
 /**
  *

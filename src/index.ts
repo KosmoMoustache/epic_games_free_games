@@ -1,8 +1,8 @@
 import axios from 'axios'
-import API from './controller/API.js'
-import { get } from './env.js'
-import logger from './logger.js'
-import main from './main.js'
+import API from './controller/API.ts'
+import { get } from './env.ts'
+import logger from './logger.ts'
+import main from './main.ts'
 
 const api_endpoint =
   'https://store-site-backend-static-ipv4.ak.epicgames.com/freeGamesPromotions'

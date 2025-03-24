@@ -1,5 +1,5 @@
 import axios from 'axios'
-import logger from '../logger.js'
+import logger from '../logger.ts'
 
 export interface ApiRequestParams {
   locale: `${string}-${string}`

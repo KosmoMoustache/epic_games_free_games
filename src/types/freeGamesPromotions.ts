@@ -6,7 +6,6 @@ export interface freeGamesPromotions {
   }
   extensions: object | unknown
 }
-export default freeGamesPromotions
 
 interface searchStore {
   elements: element[]

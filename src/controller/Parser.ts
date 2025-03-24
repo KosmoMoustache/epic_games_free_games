@@ -4,9 +4,9 @@ import type {
   PromotionalOffers,
   element,
   freeGamesPromotions,
-} from '../types/index.js'
-import { selectKeys } from '../utils.js'
-import GameElement from './GameElement.js'
+} from '../types/index.ts'
+import { selectKeys } from '../utils.ts'
+import GameElement from './GameElement.ts'
 
 // biome-ignore lint/complexity/noStaticOnlyClass: <explanation>
 export default class Parser {

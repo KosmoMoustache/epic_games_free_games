@@ -1,13 +1,13 @@
 import type { Database, ISqlite } from 'sqlite'
 import { open } from 'sqlite'
 import sqlite3 from 'sqlite3'
-import logger from '../logger.js'
+import logger from '../logger.ts'
 import type {
   PublishedEntryInsert,
   PublishedEntrySelect,
   SQLError,
   UnwrapPromise,
-} from '../types/index.js'
+} from '../types/index.ts'
 
 //?
 sqlite3.verbose()

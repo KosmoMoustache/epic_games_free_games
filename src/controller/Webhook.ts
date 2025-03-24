@@ -1,7 +1,7 @@
 import axios from 'axios'
-import logger from '../logger.js'
-import { discordTimestampType, type keyImage } from '../types/index.js'
-import { discordTimestamp } from '../utils.js'
+import logger from '../logger.ts'
+import { discordTimestampType, type keyImage } from '../types/index.ts'
+import { discordTimestamp } from '../utils.ts'
 
 type ImageField = { url: string }
 interface ImageEmbed {

@@ -5,7 +5,9 @@ Checks the Epic Games store api for free games and sends webhook when it finds o
 Send a webhook similar to the following:
 ![Webhook](./webhook.png)
 
-# Usage
+## Requirements
+
+- node@>=23
 
 First, clone the repo via git and install dependencies
 
@@ -17,14 +19,11 @@ pnpm install
 ## Then, build and run the project
 
 ```bash
-pnpm build
-node ./dist/index.js
+node ./src/index.ts
 ```
 
-## Run using a cronjob
-
 ```crontab
-0 17 * * * export NODE_ENV='production'; export PATH_TO='path/to/the/project'; cd $PATH_TO; (. ./crontab.en.sh; ./start.sh >> $PATH_TO/logs/cron-`date +\%m-\%Y`.log; )
+0 17 * * * export NODE_ENV='production'; export PATH_TO='path/to/the/project'; cd $PATH_TO; (. ./crontab.en.sh; ./start.sh >> $PATH_TO/logs/cron-`date +\%Y-\%m`.log; )
 ```
 
 # License
