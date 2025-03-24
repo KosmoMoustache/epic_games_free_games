@@ -52,6 +52,7 @@ export default class GameElement {
       discountPercentage: number
       inFuture: boolean
     } | null
+
     upcomingPromotionalOffers: {
       startDate: Date
       endDate: Date
@@ -88,12 +89,14 @@ export default class GameElement {
     }
     if (element.promotions) {
       this.promotions = {
-        promotionalOffers: Parser.getPromotionalOffers(
-          element.promotions.promotionalOffers,
-        )[0],
-        upcomingPromotionalOffers: Parser.getPromotionalOffers(
-          element.promotions.upcomingPromotionalOffers,
-        )[0],
+        promotionalOffers:
+          Parser.getPromotionalOffers(
+            element.promotions.promotionalOffers,
+          )[0] || null,
+        upcomingPromotionalOffers:
+          Parser.getPromotionalOffers(
+            element.promotions.upcomingPromotionalOffers,
+          )[0] || null,
       }
     }
   }

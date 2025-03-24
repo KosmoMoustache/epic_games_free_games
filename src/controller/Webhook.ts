@@ -11,7 +11,7 @@ interface ImageEmbed {
 interface DiscordWebhookData {
   content: string
   username: string
-  embeds?: DiscordWebhookEmbeds[]
+  embeds: DiscordWebhookEmbeds[]
   avatar_url?: string
 }
 interface DiscordWebhookEmbeds extends Partial<ImageEmbed> {
@@ -82,14 +82,15 @@ export default class WebhookBuilder {
       ],
     }
 
-    if (this.images.length >= 2) {
-      // biome-ignore lint/style/noNonNullAssertion: embeds is declared just above
-      template.embeds!.push(...this.images)
-    } else {
-      // biome-ignore lint/style/noNonNullAssertion: embeds is declared just above
-      template.embeds![0].image = {
+    // If there is only 1 image, add the image to first embed array, otherwise adds the image to the embed array
+    // Images are rendered as tall rectangle when put in the embed array
+    if (this.images.length === 1 && this.images[0]) {
+      // biome-ignore lint/style/noNonNullAssertion: embeds is declared above
+      template.embeds[0]!.image = {
         url: this.images[0].image.url,
       }
+    } else {
+      template.embeds.push(...this.images)
     }
 
     return template
@@ -100,15 +101,15 @@ export default class WebhookBuilder {
    * @param keyImages
    * @param index Index of the image embed
    * @param total Total of images embeds
-   * @pram url Url of the embed. It need to be the same for the embeds to be displayed in the same message
+   * @param url Url of the embed. It need to be the same for the embeds to be displayed in the same message
    */
-  static ImageEmbed(
+  static getImageFromIndexAndTotal(
     keyImages: keyImage[],
     index: number,
     total: number,
-    url = 'https://store.epicgames.com/fr/',
+    url = 'https://store.epicgames.com/',
   ): ImageEmbed {
-    let keyImage: keyImage
+    let keyImage: keyImage | undefined
 
     const getDefaultImage = () => {
       keyImage = keyImages[0]
@@ -117,7 +118,7 @@ export default class WebhookBuilder {
 
     switch (total) {
       case 1: {
-        keyImage = keyImages.filter(f => f.type === 'OfferImageTall')[0]
+        keyImage = keyImages.filter(f => f.type === 'OfferImageWide')[0]
         if (!keyImage) getDefaultImage()
         break
       }
@@ -151,7 +152,8 @@ export default class WebhookBuilder {
     return {
       url: url,
       image: {
-        url: keyImage.url,
+        // biome-ignore lint/style/noNonNullAssertion: there is always at least one image
+        url: keyImage!.url,
       },
     }
   }

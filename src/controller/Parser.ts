@@ -22,7 +22,7 @@ export default class Parser {
     const test = (
       t: element['catalogNs']['mappings'] | element['offerMappings'],
     ) => {
-      if (t != null && t.length >= 1 && t[0].pageSlug) {
+      if (t != null && t.length >= 1 && t[0] && t[0].pageSlug) {
         return true
       }
     }
@@ -30,10 +30,10 @@ export default class Parser {
     if (el.productSlug) {
       return el.productSlug
     }
-    if (test(el.catalogNs.mappings)) {
+    if (test(el.catalogNs.mappings) && el.catalogNs.mappings[0]?.pageSlug) {
       return el.catalogNs.mappings[0].pageSlug
     }
-    if (test(el.offerMappings)) {
+    if (test(el.offerMappings) && el.offerMappings[0]?.pageSlug) {
       return el.offerMappings[0].pageSlug
     }
     return el.id

@@ -27,6 +27,7 @@ const main = async (api: API, USE_CACHE: boolean): Promise<boolean> => {
   //
   for (let i = 0; i < elements.length; i++) {
     const element = elements[i]
+    if (!element) break
 
     try {
       await db.published.insert(element.id, element.title)
@@ -54,6 +55,7 @@ const main = async (api: API, USE_CACHE: boolean): Promise<boolean> => {
 
     for (let j = 0; j < _elements.length; j++) {
       const el = _elements[j]
+      if (!el) break
       logger.debug('State', el.getState(), el.getIdTitle())
       if (el.getState() === State.AVAILABLE_NOW) {
         logger.debug('Available now', el.getIdTitle())
@@ -80,6 +82,7 @@ const main = async (api: API, USE_CACHE: boolean): Promise<boolean> => {
   for (let i = 0; i < toPublish.length; i++) {
     const id = toPublish[i]
     const element = elements.filter(el => el.id === id)[0]
+    if (!element) break
     webhook.description += WebhookBuilder.formatDescription(
       element.title,
       // biome-ignore lint/style/noNonNullAssertion: typing is hard
@@ -90,7 +93,7 @@ const main = async (api: API, USE_CACHE: boolean): Promise<boolean> => {
     )
 
     webhook.addImages(
-      WebhookBuilder.ImageEmbed(
+      WebhookBuilder.getImageFromIndexAndTotal(
         element.keyImages,
         imageIndex++,
         toPublish.length,
@@ -104,6 +107,7 @@ const main = async (api: API, USE_CACHE: boolean): Promise<boolean> => {
   for (let i = 0; i < upcomingToPublish.length; i++) {
     const id = upcomingToPublish[i]
     const element = elements.filter(el => el.id === id)[0]
+    if (!element) break
     // Skip sending webhook of mystery games
     if (element.title.includes('Mystery Game')) continue
 
@@ -117,7 +121,7 @@ const main = async (api: API, USE_CACHE: boolean): Promise<boolean> => {
     )
 
     webhook.addImages(
-      WebhookBuilder.ImageEmbed(
+      WebhookBuilder.getImageFromIndexAndTotal(
         element.keyImages,
         imageIndex++,
         toPublish.length,
