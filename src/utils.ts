@@ -48,18 +48,16 @@ export function dateToLocalString(date: Date | string) {
 
 export async function getApiResult(api: API, use_cache = true) {
   if (use_cache) {
-    const data = JSON.parse(
-      readFileSync('./src/freeGamesPromotions.json', 'utf-8'),
-    )
+    const data = JSON.parse(readFileSync('./freeGamesPromotions.json', 'utf-8'))
     // Create cache file if not exist
     if (!data)
       writeFileSync(
-        './src/freeGamesPromotions.json',
+        './freeGamesPromotions.json',
         JSON.stringify(getApiResult(api, false)),
       )
 
     return {
-      data: JSON.parse(readFileSync('./src/freeGamesPromotions.json', 'utf-8')),
+      data: JSON.parse(readFileSync('./freeGamesPromotions.json', 'utf-8')),
     } as unknown as AxiosResponse<freeGamesPromotions>
   }
 
