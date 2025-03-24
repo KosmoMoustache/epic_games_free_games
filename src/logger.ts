@@ -20,7 +20,7 @@ const defaultLogger = [
 const logger = winston.createLogger({
   transports: [
     new winston.transports.Console({
-      level: get('NODE_ENV') === 'development' ? 'debug' : 'info',
+      level: get('LOG_LEVEL'),
       format: combine(...[colorize(), ...defaultLogger]),
     }),
     new winston.transports.File({
