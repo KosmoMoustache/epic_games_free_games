@@ -1,15 +1,3 @@
-import type { GameElementJSON } from '../controller/GameElement.ts'
-
-/**
- * @deprecated
- */
-export interface PromoEntry {
-  id: number
-  element_id: string
-  element: GameElementJSON
-  isPublished: boolean
-  inFuture: boolean
-}
 
 interface PublishedEntryBase {
   id: number

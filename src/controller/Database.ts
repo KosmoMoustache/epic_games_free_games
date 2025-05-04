@@ -16,11 +16,9 @@ type RequestResult = Promise<ISqlite.RunResult<sqlite3.Statement>> | never
 
 export default class DB {
   db: Database<sqlite3.Database, sqlite3.Statement>
-  upcoming: UpcomingEntryQuery
   published: PublishedEntryQuery
   constructor(db: Database<sqlite3.Database, sqlite3.Statement>) {
     this.db = db
-    this.upcoming = new UpcomingEntryQuery(db)
     this.published = new PublishedEntryQuery(db)
   }
   /**
@@ -73,37 +71,6 @@ export default class DB {
       migrationsPath: './db/migrations/',
     })
     return db
-  }
-}
-
-class UpcomingEntryQuery {
-  private tableName = 'PublishedEntry'
-  db: Database<sqlite3.Database, sqlite3.Statement>
-  constructor(db: Database<sqlite3.Database, sqlite3.Statement>) {
-    this.db = db
-  }
-
-  async isPublished(
-    game_id: PublishedEntrySelect['game_id'],
-  ): Promise<boolean> {
-    const query = await this.db.get<PublishedEntrySelect>(
-      `SELECT inFuture FROM ${this.tableName} WHERE game_id = ?`,
-      game_id,
-    )
-
-    if (!query) return false
-    return query.inFuture === 1
-  }
-
-  async updatePublishedStateByGameId(
-    game_id: PublishedEntryInsert['game_id'],
-    published: PublishedEntryInsert['published'],
-  ) {
-    return await this.db.run(
-      `UPDATE ${this.tableName} SET inFuture = ? WHERE game_id = ?`,
-      published,
-      game_id,
-    )
   }
 }
 

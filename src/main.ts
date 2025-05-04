@@ -128,6 +128,7 @@ const main = async (api: API, USE_CACHE: boolean): Promise<boolean> => {
       ),
     )
 
+    await db.published.updatePublishedStateByGameId(element.id, true)
     await db.upcoming.updatePublishedStateByGameId(element.id, true)
   }
 
