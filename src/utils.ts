@@ -58,13 +58,13 @@ export function getUnixTimestamp(date?: Date): string {
 
 export async function getApiResult(api: API, use_cache = true) {
   if (use_cache) {
-    const data = JSON.parse(readFileSync('./freeGamesPromotions.json', 'utf-8'))
-    // Create cache file if not exist
-    if (!data)
-      writeFileSync(
-        './freeGamesPromotions.json',
-        JSON.stringify(getApiResult(api, false)),
-      )
+    try {
+      readFileSync('./freeGamesPromotions.json', 'utf-8')
+    } catch (error) {
+      logger.info('Cache file not found, creating it', error)
+      const r = (await getApiResult(api, false)).data
+      writeFileSync('./freeGamesPromotions.json', JSON.stringify(r))
+    }
 
     return {
       data: JSON.parse(readFileSync('./freeGamesPromotions.json', 'utf-8')),
