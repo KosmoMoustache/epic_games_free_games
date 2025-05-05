@@ -41,7 +41,7 @@ export default class WebhookBuilder {
     this.description = ''
     this.url = 'https://store.epicgames.com/fr/'
     this.footer = ''
-    this.timestamp = ''
+    this.timestamp = 'https://s.kosmo.ovh/egfg'
     this.avatar_url =
       'https://raw.githubusercontent.com/KosmoMoustache/epic_games_free_games/main/profile_picture.png'
   }
