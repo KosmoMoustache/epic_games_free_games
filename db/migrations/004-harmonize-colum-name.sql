@@ -2,16 +2,12 @@
 -- Up
 --------------------------------------------------------------------------------
 
-CREATE TABLE PublishedEntry (
-  id   			INTEGER PRIMARY KEY AUTOINCREMENT,
-  game_id 	TEXT NOT NULL UNIQUE,
-  game_name TEXT NOT NULL,
-  published INTEGER NOT NULL,
-  inFuture  INTEGER NOT NULL
-);
+ALTER TABLE PublishedEntry RENAME inFuture to in_future;
+ALTER TABLE PublishedEntry RENAME endDate to end_date;
 
 --------------------------------------------------------------------------------
 -- Down
 --------------------------------------------------------------------------------
 
-DROP TABLE PublishedEntry
+ALTER TABLE PublishedEntry RENAME in_future to inFuture;
+ALTER TABLE PublishedEntry RENAME end_date to endDate;

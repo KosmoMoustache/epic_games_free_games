@@ -6,7 +6,7 @@ import WebhookBuilder from './controller/Webhook.ts'
 import { get } from './env.ts'
 import logger from './logger.ts'
 import type { SQLError } from './types/index.ts'
-import { debugDatabase, getApiResult } from './utils.ts'
+import { debugDatabase, getApiResult, getUnixTimestamp } from './utils.ts'
 
 /**
  *
@@ -19,8 +19,7 @@ const main = async (api: API, USE_CACHE: boolean): Promise<boolean> => {
 
   // Parse resulted data
   const elements = Parser.response(await getApiResult(api, USE_CACHE))
-  const failed: string[] = [] // already in db
-  const success: string[] = [] // new game
+  const tbp: string[] = [] // to be processed
 
   if (get('NODE_ENV') === 'development') debugDatabase(db)
 
@@ -30,12 +29,15 @@ const main = async (api: API, USE_CACHE: boolean): Promise<boolean> => {
     if (!element) break
 
     try {
-      await db.published.insert(element.id, element.title)
-      success.push(element.id)
-      failed.push(element.id)
+      if (await db.published.canBeInserted(element.id)) {
+        await db.published.insert(element.id, element.title)
+      } else {
+        logger.debug('Already in database', element.getIdTitle())
+      }
+      tbp.push(element.id)
     } catch (err) {
       if (DB.isSQLError(err) && DB.isDuplicateError(err as SQLError)) {
-        failed.push(element.id)
+        tbp.push(element.id)
         logger.info('Duplicate entry', {
           id: element.id,
           title: element.title,
@@ -49,8 +51,8 @@ const main = async (api: API, USE_CACHE: boolean): Promise<boolean> => {
   const toPublish: string[] = []
   const upcomingToPublish: string[] = []
 
-  for (let i = 0; i < failed.length; i++) {
-    const id = failed[i]
+  for (let i = 0; i < tbp.length; i++) {
+    const id = tbp[i]
     const _elements = elements.filter(el => el.id === id)
 
     for (let j = 0; j < _elements.length; j++) {
@@ -65,7 +67,7 @@ const main = async (api: API, USE_CACHE: boolean): Promise<boolean> => {
 
       if (el.getState() === State.UPCOMING) {
         logger.debug('Upcoming', el.getIdTitle())
-        const isPublished = await db.upcoming.isPublished(el.id)
+        const isPublished = await db.published.isPublished(el.id)
         if (isPublished === false) upcomingToPublish.push(el.id)
       }
     }
@@ -101,6 +103,11 @@ const main = async (api: API, USE_CACHE: boolean): Promise<boolean> => {
     )
 
     await db.published.updatePublishedStateByGameId(element.id, true)
+    await db.published.setEndDateByGameId(
+      element.id,
+      // biome-ignore lint/style/noNonNullAssertion: typing is hard
+      getUnixTimestamp(element.promotions.promotionalOffers!.endDate),
+    )
   }
 
   // upcoming now
@@ -128,7 +135,13 @@ const main = async (api: API, USE_CACHE: boolean): Promise<boolean> => {
       ),
     )
 
-    await db.upcoming.updatePublishedStateByGameId(element.id, true)
+    await db.published.updatePublishedStateByGameId(element.id, true)
+
+    await db.published.setEndDateByGameId(
+      element.id,
+      // biome-ignore lint/style/noNonNullAssertion: typing is hard
+      getUnixTimestamp(element.promotions.upcomingPromotionalOffers!.endDate),
+    )
   }
 
   if (webhook.description.length > 1) {
