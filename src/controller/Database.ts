@@ -8,6 +8,7 @@ import type {
   SQLError,
   UnwrapPromise,
 } from '../types/index.ts'
+import { getUnixTimestamp } from '../utils.ts'
 
 //?
 sqlite3.verbose()
@@ -88,42 +89,94 @@ class PublishedEntryQuery {
   }
 
   /**
+   * Return true if the game is not in the database or the the entry with the database has end_date set to 0, return false otherwise
+   * @param game_id
+   * @returns
+   */
+  async canBeInserted(
+    game_id: PublishedEntryInsert['game_id'],
+  ): Promise<boolean> {
+    const query = await this.db.get<PublishedEntrySelect>(
+      `SELECT * FROM ${this.tableName} WHERE game_id = ?`,
+      game_id,
+    )
+
+    if (
+      query === undefined ||
+      (query.end_date < getUnixTimestamp() && query.end_date !== 0)
+    ) {
+      return true
+    }
+
+    return false
+  }
+
+  /**
    * @param published false
-   * @param inFuture false
+   * @param in_future false
    * @returns
    */
   async insert(
     game_id: string,
     game_name: string,
     published = false,
-    inFuture = false,
+    in_future = false,
   ): RequestResult {
     return await this.db.run(
-      `INSERT INTO ${this.tableName} (game_id, game_name, published, inFuture) VALUES (?, ?, ?, ?)`,
+      `INSERT INTO ${this.tableName} (game_id, game_name, published, in_future) VALUES (?, ?, ?, ?)`,
       game_id,
       game_name,
       published,
-      inFuture,
+      in_future,
     )
   }
+
+  /**
+   *
+   * @param game_id
+   * @returns
+   */
   async isPublished(
     game_id: PublishedEntrySelect['game_id'],
   ): Promise<boolean> {
     const query = await this.db.get<PublishedEntrySelect>(
-      `SELECT published FROM ${this.tableName} WHERE game_id = ?`,
+      `SELECT published FROM ${this.tableName} WHERE game_id = ? AND end_date = 0`,
       game_id,
     )
 
     return typeof query !== 'undefined' && query.published === 1
   }
 
+  /**
+   *
+   * @param game_id
+   * @param published
+   * @returns
+   */
   async updatePublishedStateByGameId(
     game_id: PublishedEntryInsert['game_id'],
     published: PublishedEntryInsert['published'],
   ) {
     return await this.db.run(
-      `UPDATE ${this.tableName} SET published = ? WHERE game_id = ?`,
+      `UPDATE ${this.tableName} SET published = ? WHERE game_id = ? AND end_date = 0`,
       published,
+      game_id,
+    )
+  }
+
+  /**
+   * set `end_date` for a game by game_id and where `end_date` is null
+   * @param game_id
+   * @param published
+   * @returns
+   */
+  async setEndDateByGameId(
+    game_id: PublishedEntryInsert['game_id'],
+    end_date: PublishedEntryInsert['end_date'],
+  ) {
+    return await this.db.run(
+      `UPDATE ${this.tableName} SET end_date = ? WHERE game_id = ? AND end_date = 0`,
+      end_date,
       game_id,
     )
   }

@@ -45,6 +45,16 @@ export function dateToLocalString(date: Date | string) {
 
   return new Date(date).toLocaleDateString('fr-FR', option)
 }
+/**
+ * Get a unix timestamp for the current date or a given date
+ * @param date
+ * @returns
+ */
+export function getUnixTimestamp(date?: Date): string {
+  const dateObj = date ? new Date(date) : new Date()
+  const unixTimestamp = Math.floor(dateObj.getTime() / 1000)
+  return unixTimestamp.toString()
+}
 
 export async function getApiResult(api: API, use_cache = true) {
   if (use_cache) {
