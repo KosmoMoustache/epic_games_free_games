@@ -165,7 +165,7 @@ class PublishedEntryQuery {
   }
 
   /**
-   * set `end_date` for a game by game_id and where `end_date` is null
+   * set `end_date` for a game by game_id and where `end_date` is 0
    * @param game_id
    * @param published
    * @returns
