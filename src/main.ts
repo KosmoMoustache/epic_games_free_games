@@ -7,8 +7,8 @@ import ActionRowComponent from './controller/webhook/ActionRowComponent.ts'
 import ButtonComponent from './controller/webhook/ButtonComponent.ts'
 import { debugDatabase, getUnixTimestamp } from './helpers/index.ts'
 import { logger } from './index.ts'
-import Fetcher from './services/api_result.ts'
 import { get } from './services/env.ts'
+import Fetcher from './services/fetcher.ts'
 
 /**
  *
