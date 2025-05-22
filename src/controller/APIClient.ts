@@ -1,5 +1,5 @@
 import axios from 'axios'
-import logger from '../logger.ts'
+import logger from '../services/logger.ts'
 
 export interface ApiRequestParams {
   locale: `${string}-${string}`
@@ -7,7 +7,8 @@ export interface ApiRequestParams {
   allowCountries: string
 }
 
-export default class API {
+export default class APIClient {
+  static logger = logger.getLogger('APIClient')
   url: string
   request_param: ApiRequestParams
   constructor(url: string, request_param: ApiRequestParams, debug: boolean) {
@@ -16,8 +17,8 @@ export default class API {
 
     if (debug) {
       axios.interceptors.request.use(request => {
-        logger.info('Starting Request', request.url)
-        logger.debug('Request data', request)
+        APIClient.logger.info('Request:', request.url)
+        APIClient.logger.debug('Request data', request)
         return request
       })
     }

@@ -1,12 +1,14 @@
-import type API from './controller/API.ts'
-import DB from './controller/Database.ts'
-import { State } from './controller/GameElement.ts'
+import type APIClient from './controller/APIClient.ts'
+import Database from './controller/Database.ts'
+import { PromotionStatus } from './controller/GameElement.ts'
 import Parser from './controller/Parser.ts'
 import WebhookBuilder from './controller/Webhook.ts'
-import { get } from './env.ts'
-import logger from './logger.ts'
-import type { SQLError } from './types/index.ts'
-import { debugDatabase, getApiResult, getUnixTimestamp } from './utils.ts'
+import ActionRowComponent from './controller/webhook/ActionRowComponent.ts'
+import ButtonComponent from './controller/webhook/ButtonComponent.ts'
+import { debugDatabase, getUnixTimestamp } from './helpers/index.ts'
+import { logger } from './index.ts'
+import { get } from './services/env.ts'
+import Fetcher from './services/fetcher.ts'
 
 /**
  *
@@ -14,61 +16,70 @@ import { debugDatabase, getApiResult, getUnixTimestamp } from './utils.ts'
  * @param USE_CACHE boolean if cache should be used
  * @returns true if webhook was sent false otherwise
  */
-const main = async (api: API, USE_CACHE: boolean): Promise<boolean> => {
-  const db = new DB(await DB.openDB())
+const main = async (api: APIClient, USE_CACHE: boolean): Promise<boolean> => {
+  const db = new Database(await Database.open())
 
   // Parse resulted data
-  const elements = Parser.response(await getApiResult(api, USE_CACHE))
-  const tbp: string[] = [] // to be processed
+  const fetcher = new Fetcher(api, USE_CACHE)
+  const data = await fetcher.get()
+  const elements = Parser.parseEpicGames(data)
+  const els_id: string[] = []
+  const pending_publish = { now: [] as string[], upcoming: [] as string[] }
 
-  if (get('NODE_ENV') === 'development') debugDatabase(db)
+  if (get('NODE_ENV') === 'development') await debugDatabase(db, logger)
 
   //
   for (let i = 0; i < elements.length; i++) {
     const element = elements[i]
-    if (!element) break
-
-    try {
-      if (await db.published.canBeInserted(element.id)) {
-        await db.published.insert(element.id, element.title)
-      } else {
-        logger.debug('Already in database', element.getIdTitle())
-      }
-      tbp.push(element.id)
-    } catch (err) {
-      if (DB.isSQLError(err) && DB.isDuplicateError(err as SQLError)) {
-        tbp.push(element.id)
-        logger.info('Duplicate entry', {
-          id: element.id,
-          title: element.title,
-        })
-      } else {
-        logger.error('Unexpected error when inserting in database', err)
-      }
+    if (!element) {
+      logger.debug('Element not found', i)
+      continue
     }
+    if (element.hasPromotions() === false) {
+      logger.debug('No promotions', element.id, element.title)
+      continue
+    }
+
+    // Insert entry in database
+    try {
+      const res = await db.query.insert({
+        game_id: element.id,
+        game_name: element.title,
+        published: false,
+        in_future: element.getPromotionStatus() === PromotionStatus.UPCOMING,
+        end_date: getUnixTimestamp(
+          element.promotions.now?.endDate ||
+            element.promotions.upcoming?.endDate,
+        ),
+      })
+      if (res.changes === 0) {
+        logger.debug('Already in database', element.id, element.title)
+      }
+    } catch (err) {
+      logger.error('Unexpected error when inserting in database', err)
+    }
+
+    els_id.push(element.id)
   }
 
-  const toPublish: string[] = []
-  const upcomingToPublish: string[] = []
+  logger.debug('Elements to publish', els_id)
 
-  for (let i = 0; i < tbp.length; i++) {
-    const id = tbp[i]
-    const _elements = elements.filter(el => el.id === id)
-
-    for (let j = 0; j < _elements.length; j++) {
-      const el = _elements[j]
-      if (!el) break
-      logger.debug('State', el.getState(), el.getIdTitle())
-      if (el.getState() === State.AVAILABLE_NOW) {
-        logger.debug('Available now', el.getIdTitle())
-        const isPublished = await db.published.isPublished(el.id)
-        if (isPublished === false) toPublish.push(el.id)
+  for (const id in els_id) {
+    const els = elements.filter(el => el.id === els_id[id])
+    if (els.length === 0) {
+      logger.debug('Element not found', els_id[id])
+      continue
+    }
+    for (const el of els) {
+      if (el.getPromotionStatus() === PromotionStatus.AVAILABLE_NOW) {
+        logger.debug('Available now', el.id, el.title)
+        const isPublished = await db.query.isPublished(el.id)
+        if (isPublished === false) pending_publish.now.push(el.id)
       }
-
-      if (el.getState() === State.UPCOMING) {
-        logger.debug('Upcoming', el.getIdTitle())
-        const isPublished = await db.published.isPublished(el.id)
-        if (isPublished === false) upcomingToPublish.push(el.id)
+      if (el.getPromotionStatus() === PromotionStatus.UPCOMING) {
+        logger.debug('Upcoming', el.id, el.title)
+        const isPublished = await db.query.isPublished(el.id)
+        if (isPublished === false) pending_publish.upcoming.push(el.id)
       }
     }
   }
@@ -78,79 +89,109 @@ const main = async (api: API, USE_CACHE: boolean): Promise<boolean> => {
    */
 
   const webhook = new WebhookBuilder()
-  let imageIndex = -1
+  let imageIndex = 0
 
-  // Available now
-  for (let i = 0; i < toPublish.length; i++) {
-    const id = toPublish[i]
-    const element = elements.filter(el => el.id === id)[0]
-    if (!element) break
-    webhook.description += WebhookBuilder.formatDescription(
-      element.title,
-      // biome-ignore lint/style/noNonNullAssertion: typing is hard
-      element.promotions.promotionalOffers!.startDate,
-      // biome-ignore lint/style/noNonNullAssertion: typing is hard
-      element.promotions.promotionalOffers!.endDate,
-      element.productSlug,
-    )
+  // Now
+  for (const id of pending_publish.now) {
+    const els = elements.filter(el => el.id === id)
+    for (const el of els) {
+      webhook.appendDescription(
+        WebhookBuilder.formatDescription(
+          el.title,
+          // biome-ignore lint/style/noNonNullAssertion: <>
+          el.promotions.now!.startDate,
+          // biome-ignore lint/style/noNonNullAssertion: <>
+          el.promotions.now!.endDate,
+          el.getSlug(),
+        ),
+      )
 
-    webhook.addImages(
-      WebhookBuilder.getImageFromIndexAndTotal(
-        element.keyImages,
-        imageIndex++,
-        toPublish.length,
-      ),
-    )
+      webhook.addImages(
+        WebhookBuilder.getImageFromIndexAndTotal(
+          el.data.keyImages,
+          imageIndex,
+          els.length,
+        ),
+      )
+      imageIndex++
 
-    await db.published.updatePublishedStateByGameId(element.id, true)
-    await db.published.setEndDateByGameId(
-      element.id,
-      // biome-ignore lint/style/noNonNullAssertion: typing is hard
-      getUnixTimestamp(element.promotions.promotionalOffers!.endDate),
-    )
+      const db_entry = await db.query.getByGameId(el.id)
+      if (db_entry === undefined) {
+        logger.error('Element not found in database', el.id, el.title)
+        continue
+      }
+      await db.query.updatePublishedStateById(db_entry.id, true)
+    }
   }
 
-  // upcoming now
-  for (let i = 0; i < upcomingToPublish.length; i++) {
-    const id = upcomingToPublish[i]
-    const element = elements.filter(el => el.id === id)[0]
-    if (!element) break
-    // Skip sending webhook of mystery games
-    if (element.title.includes('Mystery Game')) continue
+  // Upcoming
+  for (const el of pending_publish.upcoming) {
+    const els = elements.filter(e => e.id === el)
+    for (const el of els) {
+      // Filter out Mystery Game
+      if (el.title.includes('Mystery Game')) {
+        logger.debug('Skipping Mystery Game', el.id, el.title)
+        continue
+      }
 
-    webhook.description += '*(Bientôt)* '
-    webhook.description += WebhookBuilder.formatDescription(
-      element.title,
-      // biome-ignore lint/style/noNonNullAssertion: typing is hard
-      element.promotions.upcomingPromotionalOffers!.startDate,
-      // biome-ignore lint/style/noNonNullAssertion: typing is hard
-      element.promotions.upcomingPromotionalOffers!.endDate,
-    )
+      webhook.appendDescription(
+        `*(Bientôt)* ${WebhookBuilder.formatDescription(
+          el.title,
+          // biome-ignore lint/style/noNonNullAssertion: <>
+          el.promotions.upcoming!.startDate,
+          // biome-ignore lint/style/noNonNullAssertion: <>
+          el.promotions.upcoming!.endDate,
+          el.getSlug(),
+        )}`,
+      )
 
-    webhook.addImages(
-      WebhookBuilder.getImageFromIndexAndTotal(
-        element.keyImages,
-        imageIndex++,
-        toPublish.length,
-      ),
-    )
+      webhook.addImages(
+        WebhookBuilder.getImageFromIndexAndTotal(
+          el.data.keyImages,
+          imageIndex,
+          els.length,
+        ),
+      )
+      imageIndex++
 
-    await db.published.updatePublishedStateByGameId(element.id, true)
-
-    await db.published.setEndDateByGameId(
-      element.id,
-      // biome-ignore lint/style/noNonNullAssertion: typing is hard
-      getUnixTimestamp(element.promotions.upcomingPromotionalOffers!.endDate),
-    )
+      const db_entry = await db.query.getByGameId(el.id)
+      if (db_entry === undefined) {
+        logger.error('Element not found in database', el.id, el.title)
+        continue
+      }
+      await db.query.updatePublishedStateById(db_entry.id, true)
+    }
   }
 
   if (webhook.description.length > 1) {
-    webhook.timestamp = new Date().toISOString()
+    webhook.addComponent(
+      new ActionRowComponent().addComponents([
+        /*  new ButtonComponent({
+          style: ButtonComponent.ButtonStyle.LINK,
+          emoji: {
+            name: '➕',
+          },
+          label: 'Ajouter à son serveur',
+          url: 'https://s.kosmo.ovh/egfg-add',
+          disabled: true,
+        }),*/
+        new ButtonComponent({
+          style: ButtonComponent.ButtonStyle.LINK,
+          emoji: {
+            name: 'ℹ️',
+          },
+          label: "Plus d'informations",
+          url: 'https://s.kosmo.ovh/egfg-add',
+        }),
+      ]),
+    )
     logger.info('Sending webhook')
-    await webhook.send(get('WEBHOOK_URL'))
+    await webhook.send(new URL(get('WEBHOOK_URL'))).catch(err => {
+      logger.error('Error while sending webhook', err.message)
+      logger.error('raw webhook data:', webhook)
+    })
     return true
   }
-
   return false
 }
 
