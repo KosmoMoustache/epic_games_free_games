@@ -1,5 +1,5 @@
 import axios from 'axios'
-import APIClient from './controller/API.ts'
+import APIClient from './controller/APIClient.ts'
 import main from './main.ts'
 import { get } from './services/env.ts'
 import Logger from './services/logger.ts'

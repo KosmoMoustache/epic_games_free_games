@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import type { AxiosResponse } from 'axios'
-import type APIClient from '../controller/API.ts'
+import type APIClient from '../controller/APIClient.ts'
 import type { FreeGamesPromotions } from '../types/api/freeGamesPromotions.ts'
 import Logger from './logger.ts'
 

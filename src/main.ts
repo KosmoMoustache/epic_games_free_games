@@ -1,4 +1,4 @@
-import type APIClient from './controller/API.ts'
+import type APIClient from './controller/APIClient.ts'
 import Database from './controller/Database.ts'
 import { PromotionStatus } from './controller/GameElement.ts'
 import Parser from './controller/Parser.ts'
