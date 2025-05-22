@@ -48,8 +48,7 @@ export default class ActionRowComponent extends AbstractLayoutComponent {
 
   override toJSON() {
     return {
-      type: this.#struc.type,
-      id: this.#struc.id,
+      ...this.#struc,
       components: this.#struc.components.map(component => {
         return component.toJSON()
       }),

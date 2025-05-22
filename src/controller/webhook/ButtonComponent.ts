@@ -50,13 +50,6 @@ export default class ButtonComponent extends AbstractComponent {
   }
 
   override toJSON() {
-    return {
-      type: this.#struc.type,
-      style: this.#struc.style,
-      label: this.#struc.label,
-      emoji: this.#struc.emoji,
-      url: this.#struc.url,
-      disabled: this.#struc.disabled,
-    } as ButtonStructure
+    return this.#struc
   }
 }
