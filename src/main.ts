@@ -115,7 +115,7 @@ const main = async (api: APIClient, USE_CACHE: boolean): Promise<boolean> => {
       )
       imageIndex++
 
-      const db_entry = await db.query.getLastByGameId(el.id)
+      const db_entry = await db.query.getByGameId(el.id)
       if (db_entry === undefined) {
         logger.error('Element not found in database', el.id, el.title)
         continue
@@ -154,7 +154,7 @@ const main = async (api: APIClient, USE_CACHE: boolean): Promise<boolean> => {
       )
       imageIndex++
 
-      const db_entry = await db.query.getLastByGameId(el.id)
+      const db_entry = await db.query.getByGameId(el.id)
       if (db_entry === undefined) {
         logger.error('Element not found in database', el.id, el.title)
         continue

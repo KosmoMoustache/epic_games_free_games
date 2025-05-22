@@ -110,7 +110,7 @@ class Query {
     )
   }
 
-  async getLastByGameId(
+  async getByGameId(
     game_id: PublishedEntrySelect['game_id'],
   ): Promise<PublishedEntrySelect | undefined> {
     return this.db.get<PublishedEntrySelect>(
