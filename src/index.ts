@@ -1,13 +1,15 @@
 import axios from 'axios'
-import API from './controller/API.ts'
-import { get } from './env.ts'
-import logger from './logger.ts'
+import APIClient from './controller/API.ts'
 import main from './main.ts'
+import { get } from './services/env.ts'
+import Logger from './services/logger.ts'
+
+export const logger = new Logger()
 
 const api_endpoint =
   'https://store-site-backend-static-ipv4.ak.epicgames.com/freeGamesPromotions'
 
-const api = new API(
+const api = new APIClient(
   api_endpoint,
   {
     locale: 'fr-FR',
@@ -16,7 +18,6 @@ const api = new API(
   },
   get('LOG_LEVEL') === 'debug',
 )
-
 
 main(api, get('USE_CACHE')).then(async result => {
   const uptime_url = get('UPTIME_URL')

@@ -1,132 +1,157 @@
-import type { element, keyImage } from '../types/index.ts'
-import Parser from './Parser.ts'
+import Logger from '../services/logger.ts'
+import type { Element } from '../types/types.ts'
 
-export const State = {
+type GameElementPromotion = {
+  startDate: Date
+  endDate: Date
+  inFuture: boolean
+}
+type GameElementPromotions = {
+  now: GameElementPromotion | null
+  upcoming: GameElementPromotion | null
+}
+
+export const PromotionStatus = {
   AVAILABLE_NOW: 0,
   UPCOMING: 1,
   NONE: 2,
 } as const
 
-export type GameElementJSON = {
-  title: string
-  id: string
-  effectiveDate: Date
-  offerType: string
-  keyImages: keyImage[]
-  productSlug: string
-  price: {
-    originalPrice: number
-    discountPrice: number
-  }
-  promotions: {
-    promotionalOffers: {
-      startDate: Date
-      endDate: Date
-      discountPercentage: number
-      inFuture: boolean
-    } | null
-    upcomingPromotionalOffers: {
-      startDate: Date
-      endDate: Date
-      discountPercentage: number
-      inFuture: boolean
-    } | null
-  }
-}
-
 export default class GameElement {
-  title: string
-  id: string
-  effectiveDate: Date
-  offerType: string
-  keyImages: keyImage[]
-  productSlug: string
-  price: {
-    originalPrice: number
-    discountPrice: number
-  }
-  promotions: {
-    promotionalOffers: {
-      startDate: Date
-      endDate: Date
-      discountPercentage: number
-      inFuture: boolean
-    } | null
+  static logger = Logger.getLogger('GameElement')
+  raw: Element
+  data: Element<Date>
 
-    upcomingPromotionalOffers: {
-      startDate: Date
-      endDate: Date
-      discountPercentage: number
-      inFuture: boolean
-    } | null
-  }
-  raw: element
+  id: Element['id']
+  title: Element['title']
 
-  constructor(element: element) {
+  promotions: GameElementPromotions = {
+    now: null,
+    upcoming: null,
+  }
+
+  constructor(element: Element) {
     this.raw = element
-
-    this.title = element.title
+    this.data = GameElement.parse(element)
     this.id = element.id
-    this.effectiveDate = new Date(element.effectiveDate)
-    this.offerType = element.offerType
-    this.keyImages = element.keyImages.filter(keyImage =>
-      [
-        'OfferImage',
-        'OfferImageWide',
-        'OfferImageTall',
-        'DieselStoreFrontWide',
-        'VaultClosed',
-      ].includes(keyImage.type),
+    this.title = element.title
+
+    this.extractPromotions()
+
+    if (this.promotions.now == null && this.promotions.upcoming == null)
+      GameElement.logger.debug('No valid promotions found for', this.title, this.id)
+  }
+
+  static parse(element: Element): Element<Date> {
+    return {
+      ...element,
+      effectiveDate: new Date(element.effectiveDate),
+      viewableDate: new Date(element.viewableDate),
+      price: {
+        ...element.price,
+        lineOffers:
+          element.price.lineOffers.length >= 1
+            ? element.price.lineOffers.map(lineOffer => ({
+                appliedRules:
+                  lineOffer.appliedRules.length >= 1
+                    ? lineOffer.appliedRules.map(rule => ({
+                        ...rule,
+                        endDate: new Date(rule.endDate),
+                      }))
+                    : [],
+              }))
+            : [],
+      },
+      promotions:
+        element.promotions != null
+          ? {
+              promotionalOffers: element.promotions.promotionalOffers.map(
+                promotionalOffer => ({
+                  promotionalOffers: promotionalOffer.promotionalOffers.map(
+                    offer => ({
+                      ...offer,
+                      startDate: new Date(offer.startDate),
+                      endDate: new Date(offer.endDate),
+                    }),
+                  ),
+                }),
+              ),
+              upcomingPromotionalOffers:
+                element.promotions.upcomingPromotionalOffers?.map(
+                  promotionalOffer => ({
+                    promotionalOffers: promotionalOffer.promotionalOffers.map(
+                      offer => ({
+                        ...offer,
+                        startDate: new Date(offer.startDate),
+                        endDate: new Date(offer.endDate),
+                      }),
+                    ),
+                  }),
+                ),
+            }
+          : null,
+    }
+  }
+
+  hasPromotions(this: GameElement): boolean {
+    return (
+      this.promotions &&
+      (this.promotions.now != null || this.promotions.upcoming != null)
     )
-    this.productSlug = Parser.getProductSlug(element)
-    this.price = {
-      originalPrice: element.price.totalPrice.originalPrice,
-      discountPrice: element.price.totalPrice.discountPrice,
+  }
+
+  getPromotionStatus(): (typeof PromotionStatus)[keyof typeof PromotionStatus] {
+    if (this.promotions.now) return PromotionStatus.AVAILABLE_NOW
+    if (this.promotions.upcoming) return PromotionStatus.UPCOMING
+    return PromotionStatus.NONE
+  }
+
+  getSlug(): string {
+    if (this.data.productSlug) return this.data.productSlug
+
+    const mappings = Array.isArray(this.data.catalogNs.mappings)
+      ? this.data.catalogNs.mappings
+      : []
+    if (mappings.length >= 1) {
+      return mappings[0]?.pageSlug ?? this.id
     }
-    this.promotions = {
-      promotionalOffers: null,
-      upcomingPromotionalOffers: null,
+
+    const offerMappings = Array.isArray(this.data.offerMappings)
+      ? this.data.offerMappings
+      : []
+    if (offerMappings.length >= 1) {
+      return offerMappings[0]?.pageSlug ?? this.id
     }
-    if (element.promotions) {
-      this.promotions = {
-        promotionalOffers:
-          Parser.getPromotionalOffers(
-            element.promotions.promotionalOffers,
-          )[0] || null,
-        upcomingPromotionalOffers:
-          Parser.getPromotionalOffers(
-            element.promotions.upcomingPromotionalOffers,
-          )[0] || null,
+    return this.id
+  }
+
+  /**
+   * Extract the promotions from the element data
+   * @param promotions The promotions data to extract from
+   */
+  private extractPromotions(promotions = this.data.promotions) {
+    const now = promotions?.promotionalOffers[0]?.promotionalOffers[0]
+    if (now && now.discountSetting.discountPercentage === 0) {
+      this.promotions.now = {
+        startDate: new Date(now.startDate),
+        endDate: new Date(now.endDate),
+        inFuture: new Date(now.startDate) > new Date(),
       }
     }
-  }
 
-  getState(): (typeof State)[keyof typeof State] {
-    if (this.promotions.promotionalOffers) return State.AVAILABLE_NOW
-    if (this.promotions.upcomingPromotionalOffers) return State.UPCOMING
-    return State.NONE
-  }
-
-  toJSON(): GameElementJSON {
-    return {
-      title: this.title,
-      id: this.id,
-      effectiveDate: this.effectiveDate,
-      offerType: this.offerType,
-      keyImages: this.keyImages,
-      productSlug: this.productSlug,
-      price: this.price,
-      promotions: this.promotions,
-    }
-  }
-
-  getIdTitle(): {
-    id: GameElement['id']
-    title: GameElement['title']
-  } {
-    return {
-      id: this.id,
-      title: this.title,
+    if (
+      promotions?.upcomingPromotionalOffers &&
+      promotions?.upcomingPromotionalOffers?.length >= 1
+    ) {
+      const upcoming =
+        promotions?.upcomingPromotionalOffers[0]?.promotionalOffers[0]
+      if (upcoming && upcoming.discountSetting.discountPercentage === 0) {
+        this.promotions.upcoming = {
+          startDate: new Date(upcoming.startDate),
+          endDate: new Date(upcoming.endDate),
+          inFuture: new Date(upcoming.startDate) > new Date(),
+        }
+      }
     }
   }
 }
