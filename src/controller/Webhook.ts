@@ -3,8 +3,8 @@ import { discordTimestamp } from '../helpers/index.ts'
 import { logger } from '../index.ts'
 import Logger from '../services/logger.ts'
 import { DiscordTimestampType, type KeyImage } from '../types/types.ts'
-import type AComponent from './webhook/AbstractComponent.ts'
-import type ALayoutComponent from './webhook/AbstractLayoutComponent.ts'
+import type AbstractComponent from './webhook/AbstractComponent.ts'
+import type AbstractLayoutComponent from './webhook/AbstractLayoutComponent.ts'
 
 type ImageField = { url: string }
 interface ImageEmbed {
@@ -16,7 +16,7 @@ interface DiscordWebhookData {
   username: string
   avatar_url?: string
   embeds: DiscordWebhookEmbeds[]
-  components?: ALayoutComponent[]
+  components?: AbstractLayoutComponent[]
 }
 interface DiscordWebhookEmbeds extends Partial<ImageEmbed> {
   title?: string
@@ -36,7 +36,7 @@ export default class WebhookBuilder {
   #description: string
   #images: ImageEmbed[]
   #avatar_url?: string
-  #components: AComponent[]
+  #components: AbstractComponent[]
   constructor() {
     this.#images = []
 
@@ -53,6 +53,14 @@ export default class WebhookBuilder {
     return this.#description
   }
 
+  get images() {
+    return this.#images
+  }
+
+  get components() {
+    return this.#components
+  }
+
   /**
    * Add images embeds to the final webhook
    * @param imageEmbed
@@ -65,7 +73,7 @@ export default class WebhookBuilder {
     this.#description += description
   }
 
-  addComponent(component: AComponent): void {
+  addComponent(component: AbstractComponent): void {
     this.#components.push(component)
   }
 
@@ -95,7 +103,7 @@ export default class WebhookBuilder {
         },
       ],
       components: this.#components.map(component => {
-        return component.toJSON() as ALayoutComponent
+        return component.toJSON() as AbstractLayoutComponent
       }),
     }
 
