@@ -32,10 +32,6 @@ export async function debugDatabase(db: Database, logger: Logger) {
   })
 }
 
-export function numToBool(num: number): boolean {
-  return num === 1
-}
-
 export function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min
 }

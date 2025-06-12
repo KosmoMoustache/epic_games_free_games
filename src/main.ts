@@ -9,6 +9,7 @@ import { debugDatabase, getUnixTimestamp } from './helpers/index.ts'
 import { logger } from './index.ts'
 import { get } from './services/env.ts'
 import Fetcher from './services/fetcher.ts'
+import { PublishedStateType } from './types/types.ts'
 
 /**
  *
@@ -45,7 +46,7 @@ const main = async (api: APIClient, USE_CACHE: boolean): Promise<boolean> => {
       const res = await db.query.insert({
         game_id: element.id,
         game_name: element.title,
-        published: false,
+        published: PublishedStateType.NONE,
         in_future: element.getPromotionStatus() === PromotionStatus.UPCOMING,
         end_date: getUnixTimestamp(
           element.promotions.now?.endDate ||
@@ -73,13 +74,19 @@ const main = async (api: APIClient, USE_CACHE: boolean): Promise<boolean> => {
     for (const el of els) {
       if (el.getPromotionStatus() === PromotionStatus.AVAILABLE_NOW) {
         logger.debug('Available now', el.id, el.title)
-        const isPublished = await db.query.isPublished(el.id)
-        if (isPublished === false) pending_publish.now.push(el.id)
+        const publishedState = await db.query.getPublishedState(el.id)
+        if (
+          publishedState === PublishedStateType.NONE ||
+          publishedState === PublishedStateType.PUBLISHED_UPCOMING
+        ) {
+          pending_publish.now.push(el.id)
+        }
       }
       if (el.getPromotionStatus() === PromotionStatus.UPCOMING) {
         logger.debug('Upcoming', el.id, el.title)
-        const isPublished = await db.query.isPublished(el.id)
-        if (isPublished === false) pending_publish.upcoming.push(el.id)
+        const publishedState = await db.query.getPublishedState(el.id)
+        if (publishedState === PublishedStateType.NONE)
+          pending_publish.upcoming.push(el.id)
       }
     }
   }
@@ -120,7 +127,10 @@ const main = async (api: APIClient, USE_CACHE: boolean): Promise<boolean> => {
         logger.error('Element not found in database', el.id, el.title)
         continue
       }
-      await db.query.updatePublishedStateById(db_entry.id, true)
+      await db.query.updatePublishedStateById(
+        db_entry.id,
+        PublishedStateType.PUBLISHED,
+      )
     }
   }
 
@@ -159,7 +169,10 @@ const main = async (api: APIClient, USE_CACHE: boolean): Promise<boolean> => {
         logger.error('Element not found in database', el.id, el.title)
         continue
       }
-      await db.query.updatePublishedStateById(db_entry.id, true)
+      await db.query.updatePublishedStateById(
+        db_entry.id,
+        PublishedStateType.PUBLISHED_UPCOMING,
+      )
     }
   }
 
