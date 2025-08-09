@@ -2,7 +2,8 @@ import assert from 'node:assert/strict'
 import { before, beforeEach, suite, test } from 'node:test'
 
 import Database from '../../src/controller/Database.ts'
-import { getUnixTimestamp, numToBool } from '../../src/helpers/index.ts'
+import { getUnixTimestamp } from '../../src/helpers/index.ts'
+import { PublishedStateType } from '../../src/types/types.ts'
 
 let db: Database
 
@@ -32,7 +33,7 @@ suite('Database', () => {
         // Available now
         game_id: '1',
         game_name: 'test1',
-        published: 0,
+        published: PublishedStateType.NONE,
         in_future: 0,
         end_date: getUnixTimestamp(fiveDaysInFuture),
       },
@@ -40,7 +41,7 @@ suite('Database', () => {
         // Available now
         game_id: '2',
         game_name: 'test2',
-        published: 0,
+        published: PublishedStateType.NONE,
         in_future: 0,
         end_date: getUnixTimestamp(fiveDaysInFuture),
       },
@@ -48,7 +49,7 @@ suite('Database', () => {
         // Available in the future
         game_id: '3',
         game_name: 'test3',
-        published: 0,
+        published: PublishedStateType.NONE,
         in_future: 1,
         end_date: getUnixTimestamp(fiveDaysInFuture),
       },
@@ -56,7 +57,7 @@ suite('Database', () => {
         // Available in the future
         game_id: '4',
         game_name: 'test4',
-        published: 0,
+        published: PublishedStateType.NONE,
         in_future: 1,
         end_date: getUnixTimestamp(fiveDaysInFuture),
       },
@@ -68,8 +69,8 @@ suite('Database', () => {
           const res = await db.query.insert({
             game_id: entry.game_id,
             game_name: entry.game_name,
-            published: numToBool(entry.published),
-            in_future: numToBool(entry.in_future),
+            published: entry.published,
+            in_future: entry.in_future === 1,
             end_date: entry.end_date,
           })
           assert.ok(res.changes === 1, 'Entry inserted')
@@ -89,8 +90,8 @@ suite('Database', () => {
           const res = await db.query.insert({
             game_id: entry.game_id,
             game_name: entry.game_name,
-            published: numToBool(entry.published),
-            in_future: numToBool(entry.in_future),
+            published: entry.published,
+            in_future: entry.in_future === 1,
             end_date: entry.end_date,
           })
           assert.ok(res.changes === 0, 'Entry not inserted')
@@ -128,13 +129,24 @@ suite('Database', () => {
       const result1 = await db.query.getByGameId(entries[0].game_id)
       assert.ok(result1, 'Result should not be undefined')
 
-      const result2 = await db.query.isPublished(entries[0].game_id)
-      assert.equal(result2, false, 'should be false')
+      const result2 = await db.query.getPublishedState(entries[0].game_id)
+      assert.equal(
+        result2,
+        PublishedStateType.NONE,
+        'should be 0 (PublishedStateType.NONE)',
+      )
 
-      await db.query.updatePublishedStateById(result1?.id, true)
+      await db.query.updatePublishedStateById(
+        result1?.id,
+        PublishedStateType.PUBLISHED,
+      )
 
-      const result3 = await db.query.isPublished(entries[0].game_id)
-      assert.equal(result3, true, 'should be true')
+      const result3 = await db.query.getPublishedState(entries[0].game_id)
+      assert.equal(
+        result3,
+        PublishedStateType.PUBLISHED,
+        'should be 1 (PublishedStateType.PUBLISHED)',
+      )
     })
   })
 })

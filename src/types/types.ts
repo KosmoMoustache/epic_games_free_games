@@ -18,3 +18,11 @@ export const DiscordTimestampType = {
 } as const
 export type DiscordTimestampType =
   (typeof DiscordTimestampType)[keyof typeof DiscordTimestampType]
+
+export const PublishedStateType = {
+  PUBLISHED: 1,
+  PUBLISHED_UPCOMING: 2,
+  NONE: 0,
+}
+export type PublishedStateType =
+  (typeof PublishedStateType)[keyof typeof PublishedStateType]

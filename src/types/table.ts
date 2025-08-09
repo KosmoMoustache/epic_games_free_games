@@ -1,3 +1,5 @@
+import type { PublishedStateType } from './types.ts'
+
 // Base interface for PublishedEntry database
 type PublishedEntryBase = {
   id: number
@@ -9,13 +11,13 @@ type PublishedEntryBase = {
 // Interface for inserting a new PublishedEntry
 // export interface PublishedEntryInsert extends PublishedEntryBase {
 export type PublishedEntryInsert = PublishedEntryBase & {
-  published: boolean
+  published: PublishedStateType
   in_future: boolean
 }
 
 // Interface for selecting a PublishedEntry
 export type PublishedEntrySelect = PublishedEntryBase & {
   // export interface PublishedEntrySelect extends PublishedEntryBase {
-  published: 1 | 0
+  published: PublishedStateType
   in_future: 1 | 0
 }

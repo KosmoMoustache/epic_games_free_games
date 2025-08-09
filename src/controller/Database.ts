@@ -6,6 +6,7 @@ import logger from '../services/logger.ts'
 import type {
   PublishedEntryInsert,
   PublishedEntrySelect,
+  PublishedStateType,
   SQLError,
   UnwrapPromise,
 } from '../types/types.ts'
@@ -118,17 +119,17 @@ class Query {
       game_id,
     )
   }
-
-  async isPublished(
+  async getPublishedState(
     game_id: PublishedEntrySelect['game_id'],
-  ): Promise<boolean> {
+  ): Promise<PublishedStateType | undefined> {
     return this.db
       .get<Pick<PublishedEntrySelect, 'published'>>(
         `SELECT published FROM ${this.tableName} WHERE game_id = ? ORDER BY id DESC LIMIT 1`,
         game_id,
       )
-      .then(query => {
-        return typeof query !== 'undefined' && query.published === 1
+      .then(row => {
+        if (!row) return undefined
+        return row.published
       })
   }
 
