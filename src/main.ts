@@ -97,6 +97,8 @@ const main = async (api: APIClient, USE_CACHE: boolean): Promise<boolean> => {
 
   const webhook = new WebhookBuilder()
   let imageIndex = 0
+  const imageTotal =
+    pending_publish.now.length + pending_publish.upcoming.length
 
   // Now
   for (const id of pending_publish.now) {
@@ -117,7 +119,7 @@ const main = async (api: APIClient, USE_CACHE: boolean): Promise<boolean> => {
         WebhookBuilder.getImageFromIndexAndTotal(
           el.data.keyImages,
           imageIndex,
-          els.length,
+          imageTotal,
         ),
       )
       imageIndex++
@@ -159,7 +161,7 @@ const main = async (api: APIClient, USE_CACHE: boolean): Promise<boolean> => {
         WebhookBuilder.getImageFromIndexAndTotal(
           el.data.keyImages,
           imageIndex,
-          els.length,
+          imageTotal,
         ),
       )
       imageIndex++
