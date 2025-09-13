@@ -27,6 +27,6 @@ main(api, get('USE_CACHE')).then(async result => {
     await axios
       .get(url.toString())
       .then(r => logger.info(`UPTIME response: ${r.status}`))
-      .catch(e => logger.error(e))
+      .catch(e => logger.error('Error when fetching the uptime url', e))
   }
 })
