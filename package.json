@@ -12,16 +12,16 @@
     "biome:format": "biome format --write ./src "
   },
   "dependencies": {
-    "axios": "^1.11.0",
-    "dotenv": "^16.6.1",
+    "axios": "^1.12.1",
+    "dotenv": "^17.2.2",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
     "winston": "^3.17.0",
-    "zod": "^3.25.76"
+    "zod": "^4.1.8"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "@types/node": "^22.17.1",
+    "@biomejs/biome": "^2.2.4",
+    "@types/node": "^22.18.3",
     "typescript": "^5.9.2"
   },
   "engines": {
