@@ -13,7 +13,7 @@ const schema = {
   USE_CACHE: Zboolean(false),
 } as const
 
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+// biome-ignore lint/suspicious/noExplicitAny: not public use, use in get() which is type safe
 const env: Record<string, any> = {}
 
 type EnvVariable = keyof typeof schema

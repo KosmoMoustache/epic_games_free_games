@@ -39,7 +39,11 @@ export default class GameElement {
     this.extractPromotions()
 
     if (this.promotions.now == null && this.promotions.upcoming == null)
-      GameElement.logger.debug('No valid promotions found for', this.title, this.id)
+      GameElement.logger.debug(
+        'No valid promotions found for',
+        this.title,
+        this.id,
+      )
   }
 
   static parse(element: Element): Element<Date> {

@@ -65,6 +65,7 @@ class Logger {
 
   table(...args: Parameters<Console['table']>) {
     this.#logger.info('Table:')
+    // biome-ignore lint/suspicious/noConsole: ok
     console.table(...args)
   }
 
