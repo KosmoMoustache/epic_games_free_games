@@ -7,13 +7,12 @@ Send a webhook similar to the following:
 
 ## Table of contents
 
-- [Epic Games free games tracker](#epic-games-free-games-tracker)
-  - [Table of contents](#table-of-contents)
-  - [Requirements](#requirements)
-  - [Usage](#usage)
-  - [Environment](#environment)
-  - [Example using a cronjob and nvm](#example-using-a-cronjob-and-nvm)
-    - [License](#license)
+- [Table of contents](#table-of-contents)
+- [Requirements](#requirements)
+- [Usage](#usage)
+- [Environment](#environment)
+- [Example using a cronjob and nvm](#example-using-a-cronjob-and-nvm)
+- [License](#license)
 
 ## Requirements
 
@@ -49,6 +48,6 @@ node ./src/index.ts
 0 17 * * * export NODE_ENV='production'; export PATH_TO='path/to/the/project'; cd $PATH_TO; (. ./crontab.en.sh; ./start.sh >> $PATH_TO/logs/cron-`date +\%Y-\%m`.log; )
 ```
 
-### License
+## License
 
 [GNU General Public License v3.0 © (gpl-3.0)](https://github.com/KosmoMoustache/epic_games_free_games/blob/main/LICENSE)
