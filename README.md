@@ -36,10 +36,10 @@ node ./src/index.ts
 
 ## Environment
 
-| Key         | Default value (if any) | Description                                                                                                                                                            |
+| Key         | Default  | Description                                                                                                                                                            |
 | ----------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | WEBHOOK_URL | REQUIRED               | The webhook url                                                                                                                                                        |
-| UPTIME_URL  | not defined            | The URL to monitor the application's uptime.used.                                                                                                                      |
+| UPTIME_URL  | none (optional)            | The URL to monitor the application's uptime.used.                                                                                                                      |
 | LOG_LEVEL   | info                   | The log level. Accept `debug`, `info`, `warn` and `error`.                                                                                                             |
 | USE_CACHE   | false                  | If the application should use a file (./freeGamesPromotions.json) as the api instead of calling epic games' server. Should only be used when testing and/or developing |
 

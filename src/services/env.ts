@@ -6,11 +6,11 @@ dotenv.config()
 const logger = console
 
 const schema = {
-  NODE_ENV: z.enum(['production', 'development']),
+  NODE_ENV: z.enum(['production', 'development']).default('production'),
   WEBHOOK_URL: z.string(),
   UPTIME_URL: z.string().optional(),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
-  USE_CACHE: Zboolean(false),
+  USE_CACHE: ZpreprocessBoolean().optional().default(false),
 } as const
 
 // biome-ignore lint/suspicious/noExplicitAny: not public use, use in get() which is type safe
@@ -42,10 +42,10 @@ for (const [key, value] of Object.entries(schema)) {
   }
 }
 
-export function Zboolean(defaultValue = false) {
+export function ZpreprocessBoolean() {
   return z.preprocess((str: unknown) => {
     if (str === 'true') return true
     if (str === 'false') return false
     return undefined
-  }, z.boolean().optional().default(defaultValue))
+  }, z.boolean())
 }
