@@ -12,7 +12,7 @@
     "biome:format": "biome format --write ./src "
   },
   "dependencies": {
-    "axios": "^1.12.1",
+    "axios": "^1.15.0",
     "dotenv": "^17.2.2",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
