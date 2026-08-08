@@ -1,4 +1,5 @@
 export * from './api/freeGamesPromotions.ts'
+export * from './api/steam.ts'
 export * from './table.ts'
 
 export type UnwrapPromise<T> = T extends Promise<infer U> ? U : T

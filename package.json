@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "node --watch ./src/index.ts --watch-path=./src",
     "start": "node ./src/index.ts",
+    "start:steam": "node ./src/main-steam.ts",
     "test": "node --test ./test/**/*.test.ts",
     "biome:check": "biome check --write ./src",
     "biome:format": "biome format --write ./src "
