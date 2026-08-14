@@ -27,9 +27,8 @@ export function selectKeys<T extends object, K extends keyof T>(
 }
 
 export async function debugDatabase(db: Database, logger: Logger) {
-  await db.query.getAll().then(res => {
-    logger.table(res)
-  })
+  const res = await db.query.getAll()
+  logger.table(res)
 }
 
 export function randomInt(min: number, max: number): number {

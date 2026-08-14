@@ -1,58 +1,57 @@
 import axios from 'axios'
-import SteamParser from '../controller/steamParser.ts'
-import type {
-  SteamAppData,
-  SteamAppDetailsResponse,
-  SteamSearchResponse,
-  SteamSearchRow,
-} from '../types/api/steam.ts'
-import Logger from './logger.ts'
+import Logger from '../../services/logger.ts'
+import {
+  type SteamAppData,
+  SteamAppDetailsResponseSchema,
+  type SteamSearchResponse,
+  SteamSearchResponseSchema,
+  type SteamSearchRow,
+} from '../../types/api/steam.ts'
+import SteamParser from './SteamParser.ts'
 
 export type SteamSearchParams = {
-  term?: string
-  specials?: boolean
-  free?: boolean
-  category?: string
-  sort_by?: string
   start?: number
   count?: number
 }
 
 export default class SteamFetcher {
   #logger = Logger.getLogger('SteamFetcher')
-  #base_url = 'https://store.steampowered.com'
+  #search_url = 'https://store.steampowered.com/search/'
+  #search_params = {
+    sort_by: '_ASC',
+    hwtype: '0',
+    maxprice: 'free',
+    supportedlang: 'french',
+    category1: '998',
+    specials: '1',
+    infinite: '1',
+  } as const
   #headers = {
     'Content-Type': 'application/json',
     'User-Agent': 'Mozilla/5.0',
   }
 
-  async fetchSearch(params: SteamSearchParams): Promise<SteamSearchResponse> {
+  async fetchSearch(
+    params: SteamSearchParams = {},
+  ): Promise<SteamSearchResponse> {
     const search_params: Record<string, string> = {
-      term: params.term ?? '',
-      infinite: '1',
-      cc: 'us',
-      l: 'en',
+      ...this.#search_params,
       start: String(params.start ?? 0),
       count: String(params.count ?? 25),
     }
-    if (params.specials) search_params.specials = '1'
-    if (params.free) search_params.category1 = '998'
-    if (params.category) search_params.category2 = params.category
-    if (params.sort_by) search_params.sort_by = params.sort_by
 
-    const url = `${this.#base_url}/search/results/`
-    this.#logger.debug('Fetching search', url, search_params)
-    const { data } = await axios.get<SteamSearchResponse>(url, {
+    this.#logger.debug('Fetching search', this.#search_url, search_params)
+    const { data } = await axios.get<unknown>(this.#search_url, {
       params: search_params,
       headers: this.#headers,
     })
-    return data
+    return SteamSearchResponseSchema.parse(data)
   }
 
   async fetchAppDetails(appid: string): Promise<SteamAppData | null> {
     this.#logger.debug('Fetching app details', appid)
-    const { data } = await axios.get<SteamAppDetailsResponse>(
-      `${this.#base_url}/api/appdetails`,
+    const { data } = await axios.get<unknown>(
+      'https://store.steampowered.com/api/appdetails',
       {
         params: {
           appids: appid,
@@ -62,12 +61,12 @@ export default class SteamFetcher {
         headers: this.#headers,
       },
     )
-    const entry = data[appid]
+    const entry = SteamAppDetailsResponseSchema.parse(data)[appid]
     return entry?.success ? entry.data : null
   }
 
   async fetchAllSearchPages(
-    params: SteamSearchParams,
+    params: SteamSearchParams = {},
     max_pages = 3,
   ): Promise<SteamSearchRow[]> {
     const rows: SteamSearchRow[] = []

@@ -1,32 +1,29 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import type APIClient from '../controller/APIClient.ts'
-import type { FreeGamesPromotions } from '../types/api/freeGamesPromotions.ts'
-import Logger from './logger.ts'
+import Logger from '../../services/logger.ts'
+import type {
+  FreeGamesPromotions,
+  FreeGamesPromotionsSchema,
+} from '../../types/api/freeGamesPromotions.ts'
+import type APIClient from './APIClient.ts'
 
 export default class Fetcher {
   #logger = Logger.getLogger('APIResult')
-  #api: APIClient
+  #api: APIClient<typeof FreeGamesPromotionsSchema>
   #use_cache: boolean
-  constructor(api: APIClient, use_cache = true) {
+  constructor(
+    api: APIClient<typeof FreeGamesPromotionsSchema>,
+    use_cache = true,
+  ) {
     this.#api = api
     this.#use_cache = use_cache
   }
 
   async get(): Promise<FreeGamesPromotions> {
-    // Cache
     if (this.#use_cache) {
       this.#logger.warn('Using cache')
-
       return await this.readCache()
     }
-
-    // Fetch data
-    const result = await this.fetchUsingAxios()
-    if (result.status !== 200) {
-      this.#logger.error('Error when fetching data', result)
-      throw new Error('Error when fetching data')
-    }
-    return result.data
+    return await this.fetchUsingAxios()
   }
 
   async readCache(): Promise<FreeGamesPromotions> {
@@ -38,12 +35,12 @@ export default class Fetcher {
     }
 
     this.#logger.debug('Cache file not found')
-    const json = (await this.fetchUsingAxios()).data
-    writeFileSync('./freeGamesPromotions.json', JSON.stringify(json))
-    return json
+    const data = await this.fetchUsingAxios()
+    writeFileSync('./freeGamesPromotions.json', JSON.stringify(data))
+    return data
   }
 
-  fetchUsingAxios() {
-    return this.#api.fetch<FreeGamesPromotions>()
+  async fetchUsingAxios(): Promise<FreeGamesPromotions> {
+    return this.#api.fetch()
   }
 }

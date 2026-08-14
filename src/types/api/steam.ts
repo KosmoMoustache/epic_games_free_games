@@ -1,51 +1,72 @@
-// Steam store search API (store.steampowered.com/search/results)
-export type SteamSearchResponse = {
-  success: 1 | 0
-  results_html: string
-  total_count: number
-  start: number
-}
+import { z } from 'zod'
 
-// Steam store app details API (store.steampowered.com/api/appdetails)
-export type SteamAppDetailsResponse = {
-  [appid: string]: {
-    success: boolean
-    data: SteamAppData | null
-  }
-}
+// ---------------------------------------------------------------------------
+// Types reverse engineered from the Steam store APIs:
+//  - store.steampowered.com/search/ (infinite scroll JSON response)
+//  - store.steampowered.com/api/appdetails
+// ---------------------------------------------------------------------------
 
-export type SteamPriceOverview = {
-  currency: string
-  initial: number
-  final: number
-  discount_percent: number
-  initial_formatted: string
-  final_formatted: string
-}
+export const SteamSearchResponseSchema = z.object({
+  success: z.union([z.literal(1), z.literal(0)]),
+  results_html: z.string(),
+  total_count: z.number(),
+  start: z.number(),
+})
+export type SteamSearchResponse = z.infer<typeof SteamSearchResponseSchema>
 
-export type SteamAppData = {
-  steam_appid: number
-  type: string
-  name: string
-  is_free: boolean
-  price_overview: SteamPriceOverview | null
-  release_date?: {
-    coming_soon: boolean
-    date: string
-  }
-  short_description?: string
-  header_image?: string
-  package_groups?: {
-    name: string
-    subs: {
-      packageid: number
-      is_free_license: boolean
-      price_in_cents_with_discount: number
-    }[]
-  }[]
-}
+export const SteamPriceOverviewSchema = z.object({
+  currency: z.string(),
+  initial: z.number(),
+  final: z.number(),
+  discount_percent: z.number(),
+  initial_formatted: z.string(),
+  final_formatted: z.string(),
+})
+export type SteamPriceOverview = z.infer<typeof SteamPriceOverviewSchema>
 
-// A parsed row from the search results HTML
+export const SteamAppDataSchema = z.object({
+  steam_appid: z.number(),
+  type: z.string(),
+  name: z.string(),
+  is_free: z.boolean(),
+  price_overview: SteamPriceOverviewSchema.nullable().optional(),
+  release_date: z
+    .object({
+      coming_soon: z.boolean(),
+      date: z.string(),
+    })
+    .optional(),
+  short_description: z.string().optional(),
+  header_image: z.string().optional(),
+  package_groups: z
+    .array(
+      z.object({
+        name: z.string(),
+        subs: z.array(
+          z.object({
+            packageid: z.number(),
+            is_free_license: z.boolean(),
+            price_in_cents_with_discount: z.number(),
+          }),
+        ),
+      }),
+    )
+    .optional(),
+})
+export type SteamAppData = z.infer<typeof SteamAppDataSchema>
+
+export const SteamAppDetailsResponseSchema = z.record(
+  z.string(),
+  z.object({
+    success: z.boolean(),
+    data: SteamAppDataSchema.nullable(),
+  }),
+)
+export type SteamAppDetailsResponse = z.infer<
+  typeof SteamAppDetailsResponseSchema
+>
+
+// A row parsed from the search results HTML (not an API response)
 export type SteamSearchRow = {
   appid: string
   title: string

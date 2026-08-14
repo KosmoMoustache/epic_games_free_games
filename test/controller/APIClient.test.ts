@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import { suite, test } from 'node:test'
 
-import APIClient from '../../src/controller/APIClient.ts'
+import APIClient from '../../src/providers/epic/APIClient.ts'
+import { FreeGamesPromotionsSchema } from '../../src/types/api/freeGamesPromotions.ts'
 
 const endpoints = {
   epic: 'https://store-site-backend-static-ipv4.ak.epicgames.com/freeGamesPromotions',
@@ -17,6 +18,7 @@ suite('APIClient', () => {
         country: 'FR',
         allowCountries: 'FR',
       },
+      FreeGamesPromotionsSchema,
       true,
     )
 
@@ -31,11 +33,11 @@ suite('APIClient', () => {
         country: 'FR',
         allowCountries: 'FR',
       },
+      FreeGamesPromotionsSchema,
       true,
     )
-    const response = await api.fetch()
-    assert.ok(response)
-    assert.strictEqual(response.status, 200)
-    // TODO: test response against a schema
+    const data = await api.fetch()
+    assert.ok(data)
+    assert.ok(data.data.Catalog.searchStore.elements.length >= 0)
   })
 })

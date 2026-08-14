@@ -1,6 +1,6 @@
 # Epic Games free games tracker
 
-Checks the Epic Games store api for free games and sends webhook when it finds one
+Checks the Epic Games store api and the Steam store for free games and sends a webhook when it finds one
 
 Send a webhook similar to the following:
 ![Webhook](./webhook.png)

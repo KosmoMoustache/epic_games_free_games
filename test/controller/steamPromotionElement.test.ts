@@ -3,7 +3,7 @@ import { suite, test } from 'node:test'
 
 import SteamPromotionElement, {
   SteamPromotionType,
-} from '../../src/controller/steamPromotionElement.ts'
+} from '../../src/providers/steam/SteamPromotionElement.ts'
 import type { SteamAppData, SteamSearchRow } from '../../src/types/types.ts'
 
 const row = (partial: Partial<SteamSearchRow>): SteamSearchRow => ({

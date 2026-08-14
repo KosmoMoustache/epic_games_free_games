@@ -1,5 +1,5 @@
-import Logger from '../services/logger.ts'
-import type { SteamAppData, SteamSearchRow } from '../types/api/steam.ts'
+import Logger from '../../services/logger.ts'
+import type { SteamAppData, SteamSearchRow } from '../../types/api/steam.ts'
 
 export const SteamPromotionType = {
   FREE_TO_PLAY: 'FREE_TO_PLAY',

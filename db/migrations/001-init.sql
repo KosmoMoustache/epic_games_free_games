@@ -2,16 +2,18 @@
 -- Up
 --------------------------------------------------------------------------------
 
-CREATE TABLE PromoEntry (
-  id   				INTEGER PRIMARY KEY AUTOINCREMENT,
-  element_id 	TEXT NOT NULL UNIQUE,
-	element			TEXT NOT NULL,
-  published   INTEGER NOT NULL DEFAULT 0,
-  inFuture    INTEGER NOT NULL DEFAULT 0
+CREATE TABLE PublishedEntry (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  provider    TEXT NOT NULL,
+  game_id     TEXT NOT NULL,
+  game_name   TEXT NOT NULL,
+  published   INTEGER NOT NULL,
+  in_future   INTEGER NOT NULL,
+  end_date    INTEGER NOT NULL DEFAULT 0
 );
 
 --------------------------------------------------------------------------------
 -- Down
 --------------------------------------------------------------------------------
 
-DROP TABLE PromoEntry
+DROP TABLE PublishedEntry

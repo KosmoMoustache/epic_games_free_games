@@ -1,4 +1,4 @@
-import type { SteamSearchRow } from '../types/api/steam.ts'
+import type { SteamSearchRow } from '../../types/api/steam.ts'
 
 // biome-ignore lint/complexity/noStaticOnlyClass: yes
 export default class SteamParser {

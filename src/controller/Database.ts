@@ -1,9 +1,10 @@
-import type { Database, ISqlite } from 'sqlite'
-import { open } from 'sqlite'
-import sqlite3 from 'sqlite3'
+import { mkdirSync, readdirSync, readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { DatabaseSync } from 'node:sqlite'
 import { getUnixTimestamp } from '../helpers/index.ts'
 import logger from '../services/logger.ts'
 import type {
+  ProviderName,
   PublishedEntryInsert,
   PublishedEntrySelect,
   PublishedStateType,
@@ -11,16 +12,16 @@ import type {
   UnwrapPromise,
 } from '../types/types.ts'
 
-// TODO: verbose mode is not working
-// sqlite3.verbose()
-
-type RequestResult = Promise<ISqlite.RunResult<sqlite3.Statement>> | never
+type RunResult = {
+  changes: number | bigint
+  lastInsertRowid: number | bigint
+}
 
 export default class DB {
   static logger = logger.getLogger('Database')
-  db: Database<sqlite3.Database, sqlite3.Statement>
+  db: DatabaseSync
   query: Query
-  constructor(db: Database<sqlite3.Database, sqlite3.Statement>) {
+  constructor(db: DatabaseSync) {
     this.db = db
     this.query = new Query(db)
   }
@@ -57,96 +58,142 @@ export default class DB {
   }
 
   static isSQLError(err: unknown): boolean {
-    return typeof (err as SQLError).errno !== 'undefined'
+    return typeof (err as SQLError).errcode !== 'undefined'
   }
-  static isDuplicateError(err: SQLError): boolean {
-    return err.errno === 19
+  static isDuplicateError(err: Pick<SQLError, 'errcode'>): boolean {
+    return err.errcode === 2067 || err.errcode === 1555
   }
 
-  static async open(filename = './db/database.db') {
-    const db = await open({
-      filename: filename,
-      driver: sqlite3.cached.Database,
-    })
+  static open(filename = './db/database.db'): DatabaseSync {
+    mkdirSync(dirname(filename), { recursive: true })
 
-    await db.migrate({
-      table: 'entry',
-      migrationsPath: './db/migrations/',
-    })
-
+    const db = new DatabaseSync(filename)
+    DB.migrate(db)
     return db
   }
+
+  private static migrate(db: DatabaseSync) {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS entry (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        name        TEXT NOT NULL UNIQUE,
+        applied_at  INTEGER NOT NULL
+      );
+    `)
+
+    const applied = new Set(
+      db
+        .prepare('SELECT name FROM entry')
+        .all()
+        .map(row => row.name),
+    )
+
+    const migrationsPath = './db/migrations/'
+    const files = readdirSync(migrationsPath)
+      .filter(file => file.endsWith('.sql'))
+      .sort()
+
+    for (const file of files) {
+      if (applied.has(file)) continue
+      const up = extractUp(readFileSync(join(migrationsPath, file), 'utf-8'))
+      db.exec(up)
+      db.prepare('INSERT INTO entry (name, applied_at) VALUES (?, ?)').run(
+        file,
+        getUnixTimestamp(),
+      )
+      DB.logger.info('Applied migration', file)
+    }
+  }
+}
+
+/**
+ * Extract the `-- Up` section of a migration file
+ */
+function extractUp(sql: string): string {
+  const upStart = sql.indexOf('-- Up')
+  const downStart = sql.indexOf('-- Down', upStart)
+  if (upStart === -1 || downStart === -1) return sql
+  return sql.slice(upStart, downStart)
 }
 
 class Query {
   static logger = logger.getLogger('DB:Query')
   private tableName = 'PublishedEntry'
-  db: Database<sqlite3.Database, sqlite3.Statement>
-  constructor(db: Database<sqlite3.Database, sqlite3.Statement>) {
+  db: DatabaseSync
+  constructor(db: DatabaseSync) {
     this.db = db
   }
 
   insert({
+    provider,
     game_id,
     game_name,
     published,
     in_future,
     end_date,
-  }: Omit<PublishedEntryInsert, 'id'>): RequestResult {
-    return this.db.run(
-      `INSERT INTO ${this.tableName} (game_id, game_name, published, in_future, end_date)
-       SELECT ?, ?, ?, ?, ?
-       WHERE NOT EXISTS (
-        SELECT 1 FROM ${this.tableName}
-        WHERE game_id = ?
-          AND (end_date = 0 OR end_date > ?)
-        )`,
-      game_id,
-      game_name,
-      published,
-      in_future,
-      end_date,
-      game_id,
-      getUnixTimestamp(),
-    )
-  }
-
-  async getByGameId(
-    game_id: PublishedEntrySelect['game_id'],
-  ): Promise<PublishedEntrySelect | undefined> {
-    return this.db.get<PublishedEntrySelect>(
-      `SELECT * FROM ${this.tableName} WHERE game_id = ? ORDER BY id DESC`,
-      game_id,
-    )
-  }
-  async getPublishedState(
-    game_id: PublishedEntrySelect['game_id'],
-  ): Promise<PublishedStateType | undefined> {
+  }: Omit<PublishedEntryInsert, 'id'>): RunResult {
     return this.db
-      .get<Pick<PublishedEntrySelect, 'published'>>(
-        `SELECT published FROM ${this.tableName} WHERE game_id = ? ORDER BY id DESC LIMIT 1`,
-        game_id,
+      .prepare(
+        `INSERT INTO ${this.tableName} (provider, game_id, game_name, published, in_future, end_date)
+         SELECT ?, ?, ?, ?, ?, ?
+         WHERE NOT EXISTS (
+          SELECT 1 FROM ${this.tableName}
+          WHERE provider = ? AND game_id = ?
+            AND (end_date = 0 OR end_date > ?)
+          )`,
       )
-      .then(row => {
-        if (!row) return undefined
-        return row.published
-      })
+      .run(
+        provider,
+        game_id,
+        game_name,
+        published,
+        in_future ? 1 : 0,
+        end_date,
+        provider,
+        game_id,
+        getUnixTimestamp(),
+      )
   }
 
-  async updatePublishedStateById(
+  getByGameId(
+    provider: ProviderName,
+    game_id: PublishedEntrySelect['game_id'],
+  ): PublishedEntrySelect | undefined {
+    return this.db
+      .prepare(
+        `SELECT * FROM ${this.tableName}
+         WHERE provider = ? AND game_id = ? ORDER BY id DESC`,
+      )
+      .get(provider, game_id) as PublishedEntrySelect | undefined
+  }
+
+  getPublishedState(
+    provider: ProviderName,
+    game_id: PublishedEntrySelect['game_id'],
+  ): PublishedStateType | undefined {
+    const row = this.db
+      .prepare(
+        `SELECT published FROM ${this.tableName}
+         WHERE provider = ? AND game_id = ? ORDER BY id DESC LIMIT 1`,
+      )
+      .get(provider, game_id) as
+      | Pick<PublishedEntrySelect, 'published'>
+      | undefined
+    return row?.published
+  }
+
+  updatePublishedStateById(
     id: PublishedEntryInsert['id'],
     published: PublishedEntryInsert['published'],
-  ) {
-    return await this.db.run(
-      `UPDATE ${this.tableName} SET published = ? WHERE id = ?`,
-      published,
-      id,
-    )
+  ): RunResult {
+    return this.db
+      .prepare(`UPDATE ${this.tableName} SET published = ? WHERE id = ?`)
+      .run(published, id)
   }
 
-  async getAll(): Promise<PublishedEntrySelect[]> {
-    return this.db.all<PublishedEntrySelect[]>(
-      `SELECT * FROM ${this.tableName} ORDER BY id DESC`,
-    )
+  getAll(): PublishedEntrySelect[] {
+    return this.db
+      .prepare(`SELECT * FROM ${this.tableName} ORDER BY id DESC`)
+      .all() as PublishedEntrySelect[]
   }
 }
