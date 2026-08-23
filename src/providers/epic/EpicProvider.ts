@@ -1,49 +1,29 @@
-import Database from '../../controller/Database.ts'
+import type Database from '../../controller/Database.ts'
 import WebhookBuilder from '../../controller/Webhook.ts'
 import ActionRowComponent from '../../controller/webhook/ActionRowComponent.ts'
 import ButtonComponent from '../../controller/webhook/ButtonComponent.ts'
-import { debugDatabase, getUnixTimestamp } from '../../helpers/index.ts'
+import { getUnixTimestamp } from '../../helpers/index.ts'
 import { get } from '../../services/env.ts'
 import Logger from '../../services/logger.ts'
-import { FreeGamesPromotionsSchema } from '../../types/api/freeGamesPromotions.ts'
-import { type ProviderName, PublishedStateType } from '../../types/types.ts'
+import {
+  type ProviderName,
+  PublishedStateType,
+  PubStatus,
+} from '../../types/types.ts'
 import GameProvider from '../GameProvider.ts'
-import APIClient from './APIClient.ts'
-import Fetcher from './Fetcher.ts'
+import EpicFetcher from './EpicFetcher.ts'
 import { PromotionStatus } from './GameElement.ts'
 import Parser from './Parser.ts'
-
-const api_endpoint =
-  'https://store-site-backend-static-ipv4.ak.epicgames.com/freeGamesPromotions'
-
-const request_params = {
-  locale: 'fr-FR',
-  country: 'FR',
-  allowCountries: 'FR',
-} as const
 
 export default class EpicProvider extends GameProvider {
   readonly name: ProviderName = 'epic'
   #logger = Logger.getLogger('EpicProvider')
 
-  async run(): Promise<boolean> {
-    const db = new Database(await Database.open())
-
-    const api = new APIClient(
-      api_endpoint,
-      request_params,
-      FreeGamesPromotionsSchema,
-      get('LOG_LEVEL') === 'debug',
-    )
-
-    // Parse resulted data
-    const fetcher = new Fetcher(api, get('USE_CACHE'))
-    const data = await fetcher.get()
+  async run(db: Database, fetcher = new EpicFetcher()): Promise<boolean> {
+    const data = await fetcher.fetch()
     const elements = Parser.parseEpicGames(data)
     const els_id: string[] = []
     const pending_publish = { now: [] as string[], upcoming: [] as string[] }
-
-    if (get('NODE_ENV') === 'development') await debugDatabase(db, this.#logger)
 
     for (let i = 0; i < elements.length; i++) {
       const element = elements[i]
@@ -62,7 +42,7 @@ export default class EpicProvider extends GameProvider {
           provider: this.name,
           game_id: element.id,
           game_name: element.title,
-          published: PublishedStateType.NONE,
+          pub_status: PubStatus.NONE,
           in_future: element.getPromotionStatus() === PromotionStatus.UPCOMING,
           end_date: getUnixTimestamp(
             element.promotions.now?.endDate ||
@@ -151,7 +131,7 @@ export default class EpicProvider extends GameProvider {
           this.#logger.error('Element not found in database', el.id, el.title)
           continue
         }
-        await db.query.updatePublishedStateById(
+        await db.query.updatePubStatusById(
           db_entry.id,
           PublishedStateType.PUBLISHED,
         )
@@ -193,7 +173,7 @@ export default class EpicProvider extends GameProvider {
           this.#logger.error('Element not found in database', el.id, el.title)
           continue
         }
-        await db.query.updatePublishedStateById(
+        await db.query.updatePubStatusById(
           db_entry.id,
           PublishedStateType.PUBLISHED_UPCOMING,
         )

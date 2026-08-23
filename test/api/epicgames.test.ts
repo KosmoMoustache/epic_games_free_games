@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
 import { suite, test } from 'node:test'
 
-import { FreeGamesPromotionsSchema } from '../../src/types/api/freeGamesPromotions.ts'
+import { FreeGamesPromotionsSchema } from '../../src/types/api/epic.ts'
 
 const api_url =
   'https://store-site-backend-static-ipv4.ak.epicgames.com/freeGamesPromotions'

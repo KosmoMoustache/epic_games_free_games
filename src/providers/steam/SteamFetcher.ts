@@ -1,5 +1,3 @@
-import axios from 'axios'
-import Logger from '../../services/logger.ts'
 import {
   type SteamAppData,
   SteamAppDetailsResponseSchema,
@@ -7,6 +5,7 @@ import {
   SteamSearchResponseSchema,
   type SteamSearchRow,
 } from '../../types/api/steam.ts'
+import Fetcher from '../Fetcher.ts'
 import SteamParser from './SteamParser.ts'
 
 export type SteamSearchParams = {
@@ -14,10 +13,9 @@ export type SteamSearchParams = {
   count?: number
 }
 
-export default class SteamFetcher {
-  #logger = Logger.getLogger('SteamFetcher')
-  #search_url = 'https://store.steampowered.com/search/'
-  #search_params = {
+export default class SteamFetcher extends Fetcher {
+  #url = 'https://store.steampowered.com/search/'
+  #params = {
     sort_by: '_ASC',
     hwtype: '0',
     maxprice: 'free',
@@ -26,43 +24,37 @@ export default class SteamFetcher {
     specials: '1',
     infinite: '1',
   } as const
-  #headers = {
-    'Content-Type': 'application/json',
-    'User-Agent': 'Mozilla/5.0',
+  #appdetails_url = 'https://store.steampowered.com/api/appdetails'
+
+  constructor() {
+    super('SteamFetcher')
   }
 
   async fetchSearch(
     params: SteamSearchParams = {},
   ): Promise<SteamSearchResponse> {
     const search_params: Record<string, string> = {
-      ...this.#search_params,
+      ...this.#params,
       start: String(params.start ?? 0),
       count: String(params.count ?? 25),
     }
-
-    this.#logger.debug('Fetching search', this.#search_url, search_params)
-    const { data } = await axios.get<unknown>(this.#search_url, {
-      params: search_params,
-      headers: this.#headers,
-    })
-    return SteamSearchResponseSchema.parse(data)
+    return this.getAndParse(this.#url, SteamSearchResponseSchema, search_params)
   }
 
   async fetchAppDetails(appid: string): Promise<SteamAppData | null> {
-    this.#logger.debug('Fetching app details', appid)
-    const { data } = await axios.get<unknown>(
-      'https://store.steampowered.com/api/appdetails',
-      {
-        params: {
+    this.logger.debug('Fetching app details', appid)
+    const app = (
+      await this.getAndParse(
+        this.#appdetails_url,
+        SteamAppDetailsResponseSchema,
+        {
           appids: appid,
           cc: 'us',
           l: 'en',
         },
-        headers: this.#headers,
-      },
-    )
-    const entry = SteamAppDetailsResponseSchema.parse(data)[appid]
-    return entry?.success ? entry.data : null
+      )
+    )[appid]
+    return app?.success ? app.data : null
   }
 
   async fetchAllSearchPages(
@@ -93,7 +85,7 @@ export default class SteamFetcher {
         try {
           map.set(row.appid, await this.fetchAppDetails(row.appid))
         } catch (err) {
-          this.#logger.warn('Failed to fetch app details', row.appid, err)
+          this.logger.warn('Failed to fetch app details', row.appid, err)
         }
       }
     }

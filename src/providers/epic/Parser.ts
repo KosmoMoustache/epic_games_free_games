@@ -1,4 +1,4 @@
-import type { FreeGamesPromotions } from '../../types/api/freeGamesPromotions.ts'
+import type { FreeGamesPromotions } from '../../types/api/epic.ts'
 import GameElement from './GameElement.ts'
 
 // biome-ignore lint/complexity/noStaticOnlyClass: yes

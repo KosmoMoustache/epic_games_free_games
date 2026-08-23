@@ -1,3 +1,4 @@
+import type DB from '../controller/Database.ts'
 import type { ProviderName } from '../types/types.ts'
 
 /**
@@ -10,7 +11,8 @@ export default abstract class GameProvider {
 
   /**
    * Run the provider main script.
+   * @param db Shared database connection
    * @returns true if a webhook was sent, false otherwise
    */
-  abstract run(): Promise<boolean>
+  abstract run(db: DB): Promise<boolean>
 }

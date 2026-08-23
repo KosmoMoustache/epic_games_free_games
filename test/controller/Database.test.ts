@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict'
 import { before, suite, test } from 'node:test'
 
-import Database from '../../src/controller/Database.ts'
+import Database, { extractUp } from '../../src/controller/Database.ts'
 import { getUnixTimestamp } from '../../src/helpers/index.ts'
-import { Provider, PublishedStateType } from '../../src/types/types.ts'
+import { Provider, PubStatus } from '../../src/types/types.ts'
 
 let db: Database
 
@@ -11,7 +11,7 @@ suite('Database', () => {
   before(async () => {
     // Create the database and tables
     db = new Database(await Database.open(':memory:'))
-    await db.db.exec('DELETE FROM PublishedEntry;')
+    await db.db.exec('DELETE FROM PubGame;')
   })
 
   test('SQL error handling', async () => {
@@ -29,6 +29,33 @@ suite('Database', () => {
     )
   })
 
+  suite('extractUp', () => {
+    test('returns the Up section when Up and Down markers are present', () => {
+      const sql =
+        '-- header\n-- Up\nCREATE TABLE a (id INTEGER);\n-- Down\nDROP TABLE a;\n'
+      const up = extractUp(sql)
+      assert.ok(up.includes('-- Up'), 'keeps the Up marker')
+      assert.ok(up.includes('CREATE TABLE a (id INTEGER);'), 'keeps the Up sql')
+      assert.ok(!up.includes('-- Down'), 'drops the Down marker')
+      assert.ok(!up.includes('DROP TABLE a;'), 'drops the Down sql')
+    })
+
+    test('returns the whole sql when the Up marker is missing', () => {
+      const sql = '-- Down\nDROP TABLE a;\n'
+      assert.equal(extractUp(sql), sql)
+    })
+
+    test('returns the whole sql when the Down marker is missing', () => {
+      const sql = '-- Up\nCREATE TABLE a (id INTEGER);\n'
+      assert.equal(extractUp(sql), sql)
+    })
+
+    test('returns the whole sql when both markers are missing', () => {
+      const sql = 'CREATE TABLE a (id INTEGER);\n'
+      assert.equal(extractUp(sql), sql)
+    })
+  })
+
   suite('Query', async () => {
     const fiveDaysInFuture = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
 
@@ -38,7 +65,7 @@ suite('Database', () => {
         provider: Provider.EPIC,
         game_id: '1',
         game_name: 'test1',
-        published: PublishedStateType.NONE,
+        pub_status: PubStatus.NONE,
         in_future: 0,
         end_date: getUnixTimestamp(fiveDaysInFuture),
       },
@@ -47,7 +74,7 @@ suite('Database', () => {
         provider: Provider.EPIC,
         game_id: '2',
         game_name: 'test2',
-        published: PublishedStateType.NONE,
+        pub_status: PubStatus.NONE,
         in_future: 0,
         end_date: getUnixTimestamp(fiveDaysInFuture),
       },
@@ -56,7 +83,7 @@ suite('Database', () => {
         provider: Provider.STEAM,
         game_id: '3',
         game_name: 'test3',
-        published: PublishedStateType.NONE,
+        pub_status: PubStatus.NONE,
         in_future: 1,
         end_date: getUnixTimestamp(fiveDaysInFuture),
       },
@@ -65,7 +92,7 @@ suite('Database', () => {
         provider: Provider.STEAM,
         game_id: '4',
         game_name: 'test4',
-        published: PublishedStateType.NONE,
+        pub_status: PubStatus.NONE,
         in_future: 1,
         end_date: getUnixTimestamp(fiveDaysInFuture),
       },
@@ -78,7 +105,7 @@ suite('Database', () => {
             provider: entry.provider,
             game_id: entry.game_id,
             game_name: entry.game_name,
-            published: entry.published,
+            pub_status: entry.pub_status,
             in_future: entry.in_future === 1,
             end_date: entry.end_date,
           })
@@ -90,7 +117,7 @@ suite('Database', () => {
 
       assert.deepEqual(
         {
-          ...(await db.db.prepare('SELECT COUNT(*) FROM PublishedEntry').get()),
+          ...(await db.db.prepare('SELECT COUNT(*) FROM PubGame').get()),
         },
         { 'COUNT(*)': 4 },
       )
@@ -103,7 +130,7 @@ suite('Database', () => {
             provider: entry.provider,
             game_id: entry.game_id,
             game_name: entry.game_name,
-            published: entry.published,
+            pub_status: entry.pub_status,
             in_future: entry.in_future === 1,
             end_date: entry.end_date,
           })
@@ -115,7 +142,7 @@ suite('Database', () => {
 
       assert.deepEqual(
         {
-          ...(await db.db.prepare('SELECT COUNT(*) FROM PublishedEntry').get()),
+          ...(await db.db.prepare('SELECT COUNT(*) FROM PubGame').get()),
         },
         { 'COUNT(*)': 4 },
       )
@@ -155,26 +182,15 @@ suite('Database', () => {
         entries[0].provider,
         entries[0].game_id,
       )
-      assert.equal(
-        result2,
-        PublishedStateType.NONE,
-        'should be 0 (PublishedStateType.NONE)',
-      )
+      assert.equal(result2, PubStatus.NONE, 'should be 0 (PubStatus.NONE)')
 
-      await db.query.updatePublishedStateById(
-        result1?.id,
-        PublishedStateType.PUBLISHED,
-      )
+      await db.query.updatePubStatusById(result1?.id, PubStatus.DONE)
 
       const result3 = await db.query.getPublishedState(
         entries[0].provider,
         entries[0].game_id,
       )
-      assert.equal(
-        result3,
-        PublishedStateType.PUBLISHED,
-        'should be 1 (PublishedStateType.PUBLISHED)',
-      )
+      assert.equal(result3, PubStatus.DONE, 'should be 1 (PubStatus.DONE)')
     })
   })
 })

@@ -1,4 +1,4 @@
-export * from './api/freeGamesPromotions.ts'
+export * from './api/epic.ts'
 export * from './api/steam.ts'
 export * from './table.ts'
 

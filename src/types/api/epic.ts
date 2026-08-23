@@ -39,7 +39,7 @@ export const ElementSchema = z.object({
   customAttributes: z.array(
     z.object({
       key: z.string(),
-      value: z.string(),
+      value: z.string().nullable(),
     }),
   ),
   categories: z.array(

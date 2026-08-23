@@ -4,12 +4,13 @@ import { DatabaseSync } from 'node:sqlite'
 import { getUnixTimestamp } from '../helpers/index.ts'
 import logger from '../services/logger.ts'
 import type {
+  Migrations,
   ProviderName,
-  PublishedEntryInsert,
-  PublishedEntrySelect,
+  PubGame,
+  PubGameInsert,
+  PubGameSelect,
   PublishedStateType,
   SQLError,
-  UnwrapPromise,
 } from '../types/types.ts'
 
 type RunResult = {
@@ -18,43 +19,12 @@ type RunResult = {
 }
 
 export default class DB {
-  static logger = logger.getLogger('Database')
+  static #logger = logger.getLogger('Database')
   db: DatabaseSync
   query: Query
   constructor(db: DatabaseSync) {
     this.db = db
     this.query = new Query(db)
-  }
-
-  /**
-   * Utility function to handle async try catch blocks and handle SQL error duplicate entry
-   * @param callback Callback function
-   * @example
-   * await DB.try(
-   *  async () =>
-   *   await Promise.all(
-   *     parsedElements.map((vl) => {
-   *       return db.insert(vl.id, vl);
-   *     })
-   *   )
-   * );
-   */
-  static async try<K extends () => Promise<UnwrapPromise<ReturnType<K>>>>(
-    callback: K,
-  ): Promise<UnwrapPromise<ReturnType<K>> | undefined> {
-    try {
-      return await callback()
-    } catch (err) {
-      if (DB.isSQLError(err) && DB.isDuplicateError(err as SQLError)) {
-        const where = (err as SQLError).message.split(':')
-        DB.logger.info(
-          `(SQL Error) Duplicate entry in${where[where.length - 1]}`,
-        )
-      }
-
-      DB.logger.error('(SQL Error) error', err)
-      return
-    }
   }
 
   static isSQLError(err: unknown): boolean {
@@ -74,7 +44,7 @@ export default class DB {
 
   private static migrate(db: DatabaseSync) {
     db.exec(`
-      CREATE TABLE IF NOT EXISTS entry (
+      CREATE TABLE IF NOT EXISTS migrations (
         id          INTEGER PRIMARY KEY AUTOINCREMENT,
         name        TEXT NOT NULL UNIQUE,
         applied_at  INTEGER NOT NULL
@@ -82,10 +52,9 @@ export default class DB {
     `)
 
     const applied = new Set(
-      db
-        .prepare('SELECT name FROM entry')
-        .all()
-        .map(row => row.name),
+      (db.prepare('SELECT name FROM migrations').all() as Migrations[]).map(
+        row => row.name,
+      ),
     )
 
     const migrationsPath = './db/migrations/'
@@ -97,19 +66,23 @@ export default class DB {
       if (applied.has(file)) continue
       const up = extractUp(readFileSync(join(migrationsPath, file), 'utf-8'))
       db.exec(up)
-      db.prepare('INSERT INTO entry (name, applied_at) VALUES (?, ?)').run(
+      db.prepare('INSERT INTO migrations (name, applied_at) VALUES (?, ?)').run(
         file,
         getUnixTimestamp(),
       )
-      DB.logger.info('Applied migration', file)
+      DB.#logger.info('Applied migration', file)
     }
+  }
+
+  async logQueryAll() {
+    DB.#logger.table(this.query.getAll())
   }
 }
 
 /**
  * Extract the `-- Up` section of a migration file
  */
-function extractUp(sql: string): string {
+export function extractUp(sql: string): string {
   const upStart = sql.indexOf('-- Up')
   const downStart = sql.indexOf('-- Down', upStart)
   if (upStart === -1 || downStart === -1) return sql
@@ -118,7 +91,6 @@ function extractUp(sql: string): string {
 
 class Query {
   static logger = logger.getLogger('DB:Query')
-  private tableName = 'PublishedEntry'
   db: DatabaseSync
   constructor(db: DatabaseSync) {
     this.db = db
@@ -128,16 +100,16 @@ class Query {
     provider,
     game_id,
     game_name,
-    published,
+    pub_status,
     in_future,
     end_date,
-  }: Omit<PublishedEntryInsert, 'id'>): RunResult {
+  }: PubGameInsert): RunResult {
     return this.db
       .prepare(
-        `INSERT INTO ${this.tableName} (provider, game_id, game_name, published, in_future, end_date)
+        `INSERT INTO PubGame (provider, game_id, game_name, end_date, pub_status, in_future)
          SELECT ?, ?, ?, ?, ?, ?
          WHERE NOT EXISTS (
-          SELECT 1 FROM ${this.tableName}
+          SELECT 1 FROM PubGame
           WHERE provider = ? AND game_id = ?
             AND (end_date = 0 OR end_date > ?)
           )`,
@@ -146,9 +118,9 @@ class Query {
         provider,
         game_id,
         game_name,
-        published,
-        in_future ? 1 : 0,
         end_date,
+        pub_status,
+        in_future ? 1 : 0,
         provider,
         game_id,
         getUnixTimestamp(),
@@ -157,43 +129,41 @@ class Query {
 
   getByGameId(
     provider: ProviderName,
-    game_id: PublishedEntrySelect['game_id'],
-  ): PublishedEntrySelect | undefined {
+    game_id: PubGame['game_id'],
+  ): PubGameSelect | undefined {
     return this.db
       .prepare(
-        `SELECT * FROM ${this.tableName}
+        `SELECT * FROM PubGame
          WHERE provider = ? AND game_id = ? ORDER BY id DESC`,
       )
-      .get(provider, game_id) as PublishedEntrySelect | undefined
+      .get(provider, game_id) as PubGameSelect | undefined
   }
 
   getPublishedState(
     provider: ProviderName,
-    game_id: PublishedEntrySelect['game_id'],
+    game_id: PubGame['game_id'],
   ): PublishedStateType | undefined {
     const row = this.db
       .prepare(
-        `SELECT published FROM ${this.tableName}
+        `SELECT pub_status FROM PubGame
          WHERE provider = ? AND game_id = ? ORDER BY id DESC LIMIT 1`,
       )
-      .get(provider, game_id) as
-      | Pick<PublishedEntrySelect, 'published'>
-      | undefined
-    return row?.published
+      .get(provider, game_id) as Pick<PubGameSelect, 'pub_status'> | undefined
+    return row?.pub_status
   }
 
-  updatePublishedStateById(
-    id: PublishedEntryInsert['id'],
-    published: PublishedEntryInsert['published'],
+  updatePubStatusById(
+    id: PubGame['id'],
+    pub_status: PubGame['pub_status'],
   ): RunResult {
     return this.db
-      .prepare(`UPDATE ${this.tableName} SET published = ? WHERE id = ?`)
-      .run(published, id)
+      .prepare(`UPDATE PubGame SET pub_status = ? WHERE id = ?`)
+      .run(pub_status, id)
   }
 
-  getAll(): PublishedEntrySelect[] {
+  getAll(): PubGameSelect[] {
     return this.db
-      .prepare(`SELECT * FROM ${this.tableName} ORDER BY id DESC`)
-      .all() as PublishedEntrySelect[]
+      .prepare(`SELECT * FROM PubGame ORDER BY id DESC`)
+      .all() as PubGameSelect[]
   }
 }

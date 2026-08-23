@@ -1,6 +1,3 @@
-import type Database from '../controller/Database.ts'
-import type Logger from '../services/logger.ts'
-
 /**
  *
  * @param keys
@@ -24,11 +21,6 @@ export function selectKeys<T extends object, K extends keyof T>(
   return Object.fromEntries(
     Object.entries(object).filter(([key]) => keys.includes(key as K)),
   ) as Pick<T, K>
-}
-
-export async function debugDatabase(db: Database, logger: Logger) {
-  const res = await db.query.getAll()
-  logger.table(res)
 }
 
 export function randomInt(min: number, max: number): number {

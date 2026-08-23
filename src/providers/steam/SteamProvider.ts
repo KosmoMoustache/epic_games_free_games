@@ -1,11 +1,14 @@
-import Database from '../../controller/Database.ts'
+import type Database from '../../controller/Database.ts'
 import WebhookBuilder from '../../controller/Webhook.ts'
 import ActionRowComponent from '../../controller/webhook/ActionRowComponent.ts'
 import ButtonComponent from '../../controller/webhook/ButtonComponent.ts'
-import { debugDatabase } from '../../helpers/index.ts'
 import { get } from '../../services/env.ts'
 import Logger from '../../services/logger.ts'
-import { type ProviderName, PublishedStateType } from '../../types/types.ts'
+import {
+  type ProviderName,
+  PublishedStateType,
+  PubStatus,
+} from '../../types/types.ts'
 import GameProvider from '../GameProvider.ts'
 import SteamFetcher from './SteamFetcher.ts'
 import SteamPromotionElement, {
@@ -16,14 +19,7 @@ export default class SteamProvider extends GameProvider {
   readonly name: ProviderName = 'steam'
   #logger = Logger.getLogger('SteamProvider')
 
-  async run(): Promise<boolean> {
-    const db = new Database(await Database.open())
-    const fetcher = new SteamFetcher()
-
-    if (get('NODE_ENV') === 'development') {
-      await debugDatabase(db, this.#logger)
-    }
-
+  async run(db: Database, fetcher = new SteamFetcher()): Promise<boolean> {
     // The search endpoint already targets free games with a discount:
     //  - sort_by=_ASC, maxprice=free, specials=1, category1=998
     const rows = await fetcher.fetchAllSearchPages({}, 3)
@@ -46,7 +42,7 @@ export default class SteamProvider extends GameProvider {
         provider: this.name,
         game_id: el.appid,
         game_name: el.title,
-        published: PublishedStateType.NONE,
+        pub_status: PubStatus.NONE,
         in_future: false,
         end_date: 0,
       })
@@ -96,7 +92,7 @@ export default class SteamProvider extends GameProvider {
           )
           continue
         }
-        await db.query.updatePublishedStateById(
+        await db.query.updatePubStatusById(
           db_entry.id,
           PublishedStateType.PUBLISHED,
         )

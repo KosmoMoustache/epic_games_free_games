@@ -1,5 +1,5 @@
 import Logger from '../../services/logger.ts'
-import type { Element } from '../../types/api/freeGamesPromotions.ts'
+import type { Element } from '../../types/api/epic.ts'
 
 type GameElementPromotion = {
   startDate: Date
@@ -18,7 +18,7 @@ export const PromotionStatus = {
 } as const
 
 export default class GameElement {
-  static logger = Logger.getLogger('GameElement')
+  static logger = Logger.getLogger('Epic/GameElement')
   raw: Element
   data: Element
 
