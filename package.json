@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "node --watch ./src/index.ts --watch-path=./src",
     "start": "node ./src/index.ts",
-    "test": "node --test ./test/**/*.test.ts",
+    "test": "cross-env LOG_LEVEL=error node --test ./test/**/*.test.ts",
     "biome:check": "biome check --write ./src",
     "biome:format": "biome format --write ./src "
   },
@@ -20,10 +20,11 @@
   "devDependencies": {
     "@biomejs/biome": "^2.2.4",
     "@types/node": "^22.18.3",
+    "cross-env": "^10.1.0",
     "typescript": "^5.9.2"
   },
   "engines": {
-    "node": ">=23"
+    "node": ">=24"
   },
   "volta": {
     "node": "24.19.0"
