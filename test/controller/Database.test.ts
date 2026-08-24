@@ -171,7 +171,7 @@ suite('Database', () => {
       )
     })
 
-    test('(updatePublishedStateByGameId) & (isPublished) should update the published status by game id', async () => {
+    test('(updatePubStatusById) & (PubStatus) should update the published status by game id', async () => {
       const result1 = await db.query.getByGameId(
         entries[0].provider,
         entries[0].game_id,

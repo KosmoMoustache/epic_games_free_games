@@ -1,16 +1,17 @@
-import assert from 'node:assert/strict'
+import assert from 'node:assert'
 import { existsSync, readFileSync } from 'node:fs'
 import { suite, test } from 'node:test'
-
-import { FreeGamesPromotionsSchema } from '../../src/types/api/epic.ts'
+import { FreeGamesPromotionsSchema } from '../../../src/types/types.ts'
 
 const api_url =
   'https://store-site-backend-static-ipv4.ak.epicgames.com/freeGamesPromotions'
 
-suite("Has EpicGames' api changed", async () => {
+suite('Epic Games API Check', async () => {
   test('cached response matches the reverse engineered schema', () => {
-    if (!existsSync('./freeGamesPromotions.json')) return
-    const data = JSON.parse(readFileSync('./freeGamesPromotions.json', 'utf-8'))
+    const fixture = new URL('./epic_1.json', import.meta.url)
+    assert.ok(existsSync(fixture), 'epic_1.json fixture exists')
+    const data = JSON.parse(readFileSync(fixture, 'utf-8'))
+
     const parsed = FreeGamesPromotionsSchema.safeParse(data)
     assert.equal(
       parsed.success,
