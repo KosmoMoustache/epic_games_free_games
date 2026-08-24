@@ -12,15 +12,21 @@ import {
 } from '../../types/types.ts'
 import GameProvider from '../GameProvider.ts'
 import EpicFetcher from './EpicFetcher.ts'
+import Parser from './EpicParser.ts'
 import { PromotionStatus } from './GameElement.ts'
-import Parser from './Parser.ts'
 
 export default class EpicProvider extends GameProvider {
   readonly name: ProviderName = 'epic'
   #logger = Logger.getLogger('EpicProvider')
+  #fetcher: EpicFetcher
 
-  async run(db: Database, fetcher = new EpicFetcher()): Promise<boolean> {
-    const data = await fetcher.fetch()
+  constructor(fetcher = new EpicFetcher()) {
+    super()
+    this.#fetcher = fetcher
+  }
+
+  async run(db: Database): Promise<boolean> {
+    const data = await this.#fetcher.fetch()
     const elements = Parser.parseEpicGames(data)
     const els_id: string[] = []
     const pending_publish = { now: [] as string[], upcoming: [] as string[] }
