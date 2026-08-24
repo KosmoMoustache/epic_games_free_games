@@ -16,7 +16,7 @@ Send a webhook similar to the following:
 
 ## Requirements
 
-- node@>=23
+- node@>=24
 
 ## Usage
 
@@ -35,12 +35,12 @@ node ./src/index.ts
 
 ## Environment
 
-| Key         | Default  | Description                                                                                                                                                            |
-| ----------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| WEBHOOK_URL | REQUIRED               | The webhook url                                                                                                                                                        |
-| UPTIME_URL  | none (optional)            | The URL to monitor the application's uptime.used.                                                                                                                      |
-| LOG_LEVEL   | info                   | The log level. Accept `debug`, `info`, `warn` and `error`.                                                                                                             |
-| USE_CACHE   | false                  | If the application should use a file (./freeGamesPromotions.json) as the api instead of calling epic games' server. Should only be used when testing and/or developing |
+| Key         | Default          | Description                                                                                                                                                             |
+| ----------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| WEBHOOK_URL | REQUIRED         | The webhook url                                                                                                                                                         |
+| UPTIME_URL  | none (optional)  | The URL to monitor the application's uptime.used.                                                                                                                       |
+| LOG_LEVEL   | info             | The log level. Accept `debug`, `info`, `warn` and `error`.                                                                                                              |
+| USE_CACHE   | false            | If the application should use a file (./freeGamesPromotions.json) as the api instead of calling epic games' server. Should only be used when testing and/or developing  |
 
 ## Example using a cronjob and nvm
 
