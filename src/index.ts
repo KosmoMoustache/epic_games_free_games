@@ -1,32 +1,39 @@
 import axios from 'axios'
-import APIClient from './controller/APIClient.ts'
-import main from './main.ts'
+import Database from './controller/Database.ts'
+import EpicProvider from './providers/epic/EpicProvider.ts'
+import type GameProvider from './providers/GameProvider.ts'
+import SteamProvider from './providers/steam/SteamProvider.ts'
 import { get } from './services/env.ts'
 import Logger from './services/logger.ts'
 
-export const logger = new Logger()
+const logger = Logger.getLogger('FreeGameNotifier')
 
-const api_endpoint =
-  'https://store-site-backend-static-ipv4.ak.epicgames.com/freeGamesPromotions'
+const providers: GameProvider[] = [new EpicProvider(), new SteamProvider()]
 
-const api = new APIClient(
-  api_endpoint,
-  {
-    locale: 'fr-FR',
-    country: 'FR',
-    allowCountries: 'FR',
-  },
-  get('LOG_LEVEL') === 'debug',
-)
+const db = new Database(Database.open())
 
-main(api, get('USE_CACHE')).then(async result => {
-  const uptime_url = get('UPTIME_URL')
-  if (uptime_url !== undefined) {
-    const url = new URL(uptime_url)
-    url.searchParams.set('msg', `OK ${result ? 'SEND' : 'NOSEND'}`)
-    await axios
-      .get(url.toString())
-      .then(r => logger.info(`UPTIME response: ${r.status}`))
-      .catch(e => logger.error('Error when fetching the uptime url', e))
-  }
-})
+if (get('NODE_ENV') === 'development') {
+  await db.logQueryAll()
+}
+
+Promise.all(providers.map(provider => provider.run(db)))
+  .then(async results => {
+    const uptime_url = get('UPTIME_URL')
+    if (uptime_url !== undefined) {
+      const url = new URL(uptime_url)
+      const message = providers
+        .map(
+          (provider, index) =>
+            `${provider.name.toUpperCase()} ${
+              results[index] ? 'SEND' : 'NOSEND'
+            }`,
+        )
+        .join(' ')
+      url.searchParams.set('msg', `OK ${message}`)
+      await axios
+        .get(url.toString())
+        .then(r => logger.info(`UPTIME response: ${r.status}`))
+        .catch(e => logger.error('Error when fetching the uptime url', e))
+    }
+  })
+  .finally(() => db.db.close())

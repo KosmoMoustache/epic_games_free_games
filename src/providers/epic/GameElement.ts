@@ -1,5 +1,5 @@
-import Logger from '../services/logger.ts'
-import type { Element } from '../types/types.ts'
+import Logger from '../../services/logger.ts'
+import type { Element } from '../../types/api/epic.ts'
 
 type GameElementPromotion = {
   startDate: Date
@@ -18,9 +18,9 @@ export const PromotionStatus = {
 } as const
 
 export default class GameElement {
-  static logger = Logger.getLogger('GameElement')
+  static logger = Logger.getLogger('Epic/GameElement')
   raw: Element
-  data: Element<Date>
+  data: Element
 
   id: Element['id']
   title: Element['title']
@@ -32,7 +32,7 @@ export default class GameElement {
 
   constructor(element: Element) {
     this.raw = element
-    this.data = GameElement.parse(element)
+    this.data = element
     this.id = element.id
     this.title = element.title
 
@@ -44,57 +44,6 @@ export default class GameElement {
         this.title,
         this.id,
       )
-  }
-
-  static parse(element: Element): Element<Date> {
-    return {
-      ...element,
-      effectiveDate: new Date(element.effectiveDate),
-      viewableDate: new Date(element.viewableDate),
-      price: {
-        ...element.price,
-        lineOffers:
-          element.price.lineOffers.length >= 1
-            ? element.price.lineOffers.map(lineOffer => ({
-                appliedRules:
-                  lineOffer.appliedRules.length >= 1
-                    ? lineOffer.appliedRules.map(rule => ({
-                        ...rule,
-                        endDate: new Date(rule.endDate),
-                      }))
-                    : [],
-              }))
-            : [],
-      },
-      promotions:
-        element.promotions != null
-          ? {
-              promotionalOffers: element.promotions.promotionalOffers.map(
-                promotionalOffer => ({
-                  promotionalOffers: promotionalOffer.promotionalOffers.map(
-                    offer => ({
-                      ...offer,
-                      startDate: new Date(offer.startDate),
-                      endDate: new Date(offer.endDate),
-                    }),
-                  ),
-                }),
-              ),
-              upcomingPromotionalOffers:
-                element.promotions.upcomingPromotionalOffers?.map(
-                  promotionalOffer => ({
-                    promotionalOffers: promotionalOffer.promotionalOffers.map(
-                      offer => ({
-                        ...offer,
-                        startDate: new Date(offer.startDate),
-                        endDate: new Date(offer.endDate),
-                      }),
-                    ),
-                  }),
-                ),
-            }
-          : null,
-    }
   }
 
   hasPromotions(this: GameElement): boolean {

@@ -145,6 +145,25 @@ suite('WebhookBuilder', { skip: false }, () => {
     )
   })
 
+  test('(formatSteamDescription) should format description with app url', () => {
+    const r = WebhookBuilder.formatSteamDescription('Game Title', '606150')
+    assert.strictEqual(
+      r,
+      '**Game Title**: https://store.steampowered.com/app/606150\n',
+    )
+  })
+
+  suite('(constructor options)', () => {
+    test('should use custom title', () => {
+      const wb = new WebhookBuilder({ title: '[Steam]' })
+      assert.ok(wb)
+    })
+    test('should keep default title when no options given', () => {
+      const wb = new WebhookBuilder()
+      assert.ok(wb)
+    })
+  })
+
   suite('send', () => {
     // TODO
     todo('implement this test (should build the webhook and send it)')

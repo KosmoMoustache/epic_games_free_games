@@ -1,10 +1,18 @@
-export * from './api/freeGamesPromotions.ts'
+export * from './api/epic.ts'
+export * from './api/steam.ts'
 export * from './table.ts'
+
+export const Provider = {
+  EPIC: 'epic',
+  STEAM: 'steam',
+} as const
+export type ProviderName = (typeof Provider)[keyof typeof Provider]
 
 export type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
 export interface SQLError extends Error {
-  errno: number
   code: string
+  errcode: number
+  errstr: string
 }
 
 export const DiscordTimestampType = {

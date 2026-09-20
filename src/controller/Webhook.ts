@@ -1,6 +1,5 @@
 import axios from 'axios'
 import { discordTimestamp } from '../helpers/index.ts'
-import { logger } from '../index.ts'
 import Logger from '../services/logger.ts'
 import { DiscordTimestampType, type KeyImage } from '../types/types.ts'
 import type AbstractComponent from './webhook/AbstractComponent.ts'
@@ -28,6 +27,13 @@ interface DiscordWebhookEmbeds extends Partial<ImageEmbed> {
   timestamp?: string
 }
 
+export type WebhookOptions = {
+  title?: string
+  username?: string
+  url?: string
+  avatar_url?: string
+}
+
 export default class WebhookBuilder {
   static logger = Logger.getLogger('WebhookBuilder')
   #title: string
@@ -37,14 +43,15 @@ export default class WebhookBuilder {
   #images: ImageEmbed[]
   #avatar_url?: string
   #components: AbstractComponent[]
-  constructor() {
+  constructor(options: WebhookOptions = {}) {
     this.#images = []
 
-    this.#title = '[Epic Games]'
-    this.#username = 'Game Deals'
+    this.#title = options.title ?? '[Epic Games]'
+    this.#username = options.username ?? 'Game Deals'
     this.#description = ''
-    this.#url = 'https://store.epicgames.com/'
+    this.#url = options.url ?? 'https://store.epicgames.com/'
     this.#avatar_url =
+      options.avatar_url ??
       'https://raw.githubusercontent.com/KosmoMoustache/epic_games_free_games/main/profile_picture.png'
     this.#components = []
   }
@@ -124,7 +131,7 @@ export default class WebhookBuilder {
       })
     }
 
-    logger.debug('Sending webhook', template)
+    WebhookBuilder.logger.debug('Sending webhook', template)
 
     return template
   }
@@ -203,5 +210,9 @@ export default class WebhookBuilder {
     )} au ${discordTimestamp(date_to, DiscordTimestampType.f)} ${
       pageSlug ? `https://store.epicgames.com/p/${pageSlug}` : ''
     }\n`
+  }
+
+  static formatSteamDescription(title: string, appid: string): string {
+    return `**${title}**: https://store.steampowered.com/app/${appid}\n`
   }
 }
