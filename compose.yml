@@ -3,6 +3,7 @@ services:
     image: ghcr.io/kosmomoustache/epic_games_free_games:latest
     container_name: epic-games-free-games
     restart: unless-stopped
+    user: "${UID:-1000}:${GID:-1000}"
     environment:
       EGFG_SCHEDULE: "0 17 * * *"
       EGFG_RUN_ON_START: "true"
