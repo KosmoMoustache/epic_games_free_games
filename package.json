@@ -19,14 +19,11 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.4",
-    "@types/node": "^22.18.3",
+    "@types/node": "^26.6.5",
     "cross-env": "^10.1.0",
     "typescript": "^5.9.2"
   },
   "engines": {
-    "node": ">=24"
-  },
-  "volta": {
-    "node": "24.19.0"
+    "node": ">=26"
   }
 }
