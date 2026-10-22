@@ -1,6 +1,12 @@
 #!/bin/sh
 set -eu
 
+if [ "$(id -u)" = "0" ]; then
+  mkdir -p /app/db /app/logs
+  chown -R node:node /app/db /app/logs
+  exec su-exec node "$0" "$@"
+fi
+
 mkdir -p /app/db/migrations
 cp -R /app/migrations/. /app/db/migrations/
 

@@ -9,7 +9,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --prod --frozen-lockfile
 
 FROM alpine:3.24 AS runtime
-RUN apk add --no-cache libatomic libstdc++ ca-certificates supercronic \
+RUN apk add --no-cache libatomic libstdc++ ca-certificates supercronic su-exec \
     && addgroup -S node \
     && adduser -S -G node -h /app node
 COPY --from=deps /usr/local/bin/node /usr/local/bin/node
@@ -25,5 +25,4 @@ ARG APP_VERSION=0.0.0
 LABEL org.opencontainers.image.version=$APP_VERSION
 ENV APP_VERSION=$APP_VERSION
 COPY --chmod=755 --chown=node:node entrypoint.sh /usr/local/bin/entrypoint.sh
-USER node
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
