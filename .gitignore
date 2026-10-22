@@ -1,4 +1,5 @@
 *freeGamesPromotions.json
+*LocalData.json
 db/**.db
 
 # dotenv environment variable files
