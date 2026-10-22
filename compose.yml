@@ -1,12 +1,10 @@
 services:
   epic-games-free-games:
-    # image: ghcr.io/kosmomoustache/epic_games_free_games:latest
-    build: ./
-    image: epic_games_free_games:local
+    image: ghcr.io/kosmomoustache/epic_games_free_games:latest
     container_name: epic-games-free-games
     restart: unless-stopped
     environment:
-      EGFG_SCHEDULE: "* * * * *"
+      EGFG_SCHEDULE: "0 17 * * *"
       EGFG_RUN_ON_START: "true"
       WEBHOOK_URL: https://discord.com/api/webhooks/CHANGE_ME
       LOCALES: en-GB
