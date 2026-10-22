@@ -1,3 +1,4 @@
+import { get } from '../../services/env.ts'
 import {
   type SteamAppData,
   SteamAppDetailsResponseSchema,
@@ -37,6 +38,10 @@ export default class SteamFetcher extends Fetcher {
       ...this.#params,
       start: String(params.start ?? 0),
       count: String(params.count ?? 25),
+    }
+    if (get('USE_CACHE')) {
+      this.logger.info('Using local cached data')
+      return this.getLocalData(SteamSearchResponseSchema)
     }
     return this.getAndParse(this.#url, SteamSearchResponseSchema, search_params)
   }

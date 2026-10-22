@@ -1,0 +1,14 @@
+.git
+.github
+node_modules
+logs
+db/*.db
+*.log
+.env
+.env.*
+!.env.sample
+test
+profile_picture.png
+webhook.png
+README.md
+LICENSE

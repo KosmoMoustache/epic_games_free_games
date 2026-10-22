@@ -9,6 +9,8 @@
     "start": "node ./src/index.ts",
     "test": "cross-env LOG_LEVEL=error node --test ./test/**/*.test.ts",
     "test:watch": "cross-env LOG_LEVEL=error node --test --watch ./test/**/*.test.ts",
+    "docker:build": "docker build -t epic-games-free-games:local .",
+    "docker:test": "docker compose -f compose.test.yml up --build",
     "biome:check": "biome check --write ./src",
     "biome:format": "biome format --write ./src "
   },
