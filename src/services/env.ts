@@ -5,12 +5,24 @@ dotenv.config({ quiet: true })
 
 const logger = console
 
+const localeSchema = z.string().refine(
+  value => {
+    try {
+      return Intl.getCanonicalLocales(value).length > 0
+    } catch {
+      return false
+    }
+  },
+  { message: 'Must be a valid BCP 47 locale (e.g. en-GB, fr-FR)' },
+)
+
 const schema = {
   NODE_ENV: z.enum(['production', 'development']).default('production'),
   WEBHOOK_URL: z.string(),
   UPTIME_URL: z.string().optional(),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
   USE_CACHE: ZpreprocessBoolean().optional().default(false),
+  LOCALES: localeSchema.default('en-GB'),
 } as const
 
 // biome-ignore lint/suspicious/noExplicitAny: not public use, use in get() which is type safe
@@ -31,7 +43,7 @@ for (const [key, value] of Object.entries(schema)) {
     env[key] = output
   } catch (e) {
     logger.error(
-      `[${new Date().toISOString()}] [] error: ${key} env variable is missing`,
+      `[${Temporal.Now.instant().toString()}] [] error: ${key} env variable is missing`,
     )
     if (e instanceof z.ZodError) {
       for (const issue of e.issues) {

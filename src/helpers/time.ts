@@ -1,6 +1,7 @@
+import { get } from '../services/env.ts'
 import type { DiscordTimestampType } from '../types/types.ts'
 
-export function dateToLocalString(date: Date | string) {
+export function dateToLocalString(date: Temporal.Instant | string) {
   const option = {
     day: '2-digit',
     month: '2-digit',
@@ -10,17 +11,20 @@ export function dateToLocalString(date: Date | string) {
     second: '2-digit',
   } as Intl.DateTimeFormatOptions
 
-  return new Date(date).toLocaleDateString('fr-FR', option)
+  return Temporal.Instant.from(date)
+    .toZonedDateTimeISO(Temporal.Now.timeZoneId())
+    .toLocaleString(get('LOCALES'), option)
 }
 
-/**
- * Get a unix timestamp for the current date or a given date
- * @param date
- * @returns
- */
-export function getUnixTimestamp(date?: Date): number {
-  const dateObj = date ? new Date(date) : new Date()
-  return Math.floor(dateObj.getTime() / 1000)
+export function getEpochMillis(date?: Temporal.Instant | string): number {
+  const instant =
+    date === undefined
+      ? Temporal.Now.instant()
+      : typeof date === 'string'
+        ? Temporal.Instant.from(date)
+        : date
+
+  return instant.epochMilliseconds
 }
 
 /**
@@ -30,8 +34,8 @@ export function getUnixTimestamp(date?: Date): number {
  * @returns
  */
 export function discordTimestamp(
-  date: Date,
+  date: Temporal.Instant,
   type: DiscordTimestampType,
 ): `<t:${number}:${DiscordTimestampType}>` {
-  return `<t:${date.getTime() / 1000}:${type}>`
+  return `<t:${Math.floor(date.epochMilliseconds / 1000)}:${type}>`
 }

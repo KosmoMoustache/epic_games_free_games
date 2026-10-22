@@ -43,6 +43,7 @@ node ./src/index.ts
 | UPTIME_URL  | none (optional)  | The URL to monitor the application's uptime.used.                                                                                                                       |
 | LOG_LEVEL   | info             | The log level. Accept `debug`, `info`, `warn` and `error`.                                                                                                              |
 | USE_CACHE   | false            | If the application should use a file (./freeGamesPromotions.json) as the api instead of calling epic games' server. Should only be used when testing and/or developing  |
+| LOCALES     | en-GB            | The BCP 47 locale used to format dates (e.g. `fr-FR`).                                                                                                                  |
 
 ## Example using a cronjob and mise
 

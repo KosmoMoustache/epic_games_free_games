@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { before, suite, test } from 'node:test'
 
 import Database, { extractUp } from '../../src/controller/Database.ts'
-import { getUnixTimestamp } from '../../src/helpers/index.ts'
+import { getEpochMillis } from '../../src/helpers/index.ts'
 import { Provider, PubStatus } from '../../src/types/types.ts'
 
 let db: Database
@@ -57,7 +57,7 @@ suite('Database', () => {
   })
 
   suite('Query', async () => {
-    const fiveDaysInFuture = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
+    const fiveDaysInFuture = Temporal.Now.instant().add({ hours: 5 * 24 })
 
     const entries = [
       {
@@ -67,7 +67,7 @@ suite('Database', () => {
         game_name: 'test1',
         pub_status: PubStatus.NONE,
         in_future: 0,
-        end_date: getUnixTimestamp(fiveDaysInFuture),
+        end_date: getEpochMillis(fiveDaysInFuture),
       },
       {
         // Available now
@@ -76,7 +76,7 @@ suite('Database', () => {
         game_name: 'test2',
         pub_status: PubStatus.NONE,
         in_future: 0,
-        end_date: getUnixTimestamp(fiveDaysInFuture),
+        end_date: getEpochMillis(fiveDaysInFuture),
       },
       {
         // Available in the future
@@ -85,7 +85,7 @@ suite('Database', () => {
         game_name: 'test3',
         pub_status: PubStatus.NONE,
         in_future: 1,
-        end_date: getUnixTimestamp(fiveDaysInFuture),
+        end_date: getEpochMillis(fiveDaysInFuture),
       },
       {
         // Available in the future
@@ -94,7 +94,7 @@ suite('Database', () => {
         game_name: 'test4',
         pub_status: PubStatus.NONE,
         in_future: 1,
-        end_date: getUnixTimestamp(fiveDaysInFuture),
+        end_date: getEpochMillis(fiveDaysInFuture),
       },
     ] as const
 

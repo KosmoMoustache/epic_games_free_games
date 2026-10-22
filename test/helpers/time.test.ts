@@ -1,10 +1,14 @@
 import assert from 'node:assert/strict'
 import { suite, test } from 'node:test'
-import { getUnixTimestamp } from '../../src/helpers/index.ts'
+import { getEpochMillis } from '../../src/helpers/index.ts'
 
 suite('Time', () => {
-  test('should return the correct unix timestamp', () => {
-    const r = getUnixTimestamp(new Date(2026, 7, 24, 7, 21, 24))
-    assert.equal(r, 1787548884)
+  test('should get the current epoch', () => {
+    const r = getEpochMillis()
+    assert.equal(r, Temporal.Now.instant().epochMilliseconds)
+  })
+  test('should return the correct epoch', () => {
+    const r = getEpochMillis(Temporal.Instant.from('2026-08-24T07:21:24Z'))
+    assert.equal(r, 1787556084000)
   })
 })

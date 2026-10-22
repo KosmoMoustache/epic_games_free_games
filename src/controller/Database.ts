@@ -1,7 +1,7 @@
 import { mkdirSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import { getUnixTimestamp } from '../helpers/index.ts'
+import { getEpochMillis } from '../helpers/index.ts'
 import logger from '../services/logger.ts'
 import type {
   Migrations,
@@ -68,7 +68,7 @@ export default class DB {
       db.exec(up)
       db.prepare('INSERT INTO migrations (name, applied_at) VALUES (?, ?)').run(
         file,
-        getUnixTimestamp(),
+        getEpochMillis(),
       )
       DB.#logger.info('Applied migration', file)
     }
@@ -123,7 +123,7 @@ class Query {
         in_future ? 1 : 0,
         provider,
         game_id,
-        getUnixTimestamp(),
+        getEpochMillis(),
       )
   }
 

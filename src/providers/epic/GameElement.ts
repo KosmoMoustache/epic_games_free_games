@@ -2,8 +2,8 @@ import Logger from '../../services/logger.ts'
 import type { Element } from '../../types/api/epic.ts'
 
 type GameElementPromotion = {
-  startDate: Date
-  endDate: Date
+  startDate: Temporal.Instant
+  endDate: Temporal.Instant
   inFuture: boolean
 }
 type GameElementPromotions = {
@@ -85,10 +85,12 @@ export default class GameElement {
   private extractPromotions(promotions = this.data.promotions) {
     const now = promotions?.promotionalOffers[0]?.promotionalOffers[0]
     if (now && now.discountSetting.discountPercentage === 0) {
+      const startDate = Temporal.Instant.from(now.startDate)
       this.promotions.now = {
-        startDate: new Date(now.startDate),
-        endDate: new Date(now.endDate),
-        inFuture: new Date(now.startDate) > new Date(),
+        startDate,
+        endDate: Temporal.Instant.from(now.endDate),
+        inFuture:
+          Temporal.Instant.compare(startDate, Temporal.Now.instant()) > 0,
       }
     }
 
@@ -99,10 +101,12 @@ export default class GameElement {
       const upcoming =
         promotions?.upcomingPromotionalOffers[0]?.promotionalOffers[0]
       if (upcoming && upcoming.discountSetting.discountPercentage === 0) {
+        const startDate = Temporal.Instant.from(upcoming.startDate)
         this.promotions.upcoming = {
-          startDate: new Date(upcoming.startDate),
-          endDate: new Date(upcoming.endDate),
-          inFuture: new Date(upcoming.startDate) > new Date(),
+          startDate,
+          endDate: Temporal.Instant.from(upcoming.endDate),
+          inFuture:
+            Temporal.Instant.compare(startDate, Temporal.Now.instant()) > 0,
         }
       }
     }
