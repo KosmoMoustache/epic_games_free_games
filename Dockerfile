@@ -9,9 +9,11 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --prod --frozen-lockfile
 
 FROM alpine:3.24 AS runtime
+ARG UID=1000
+ARG GID=1000
 RUN apk add --no-cache libatomic libstdc++ ca-certificates supercronic su-exec \
-    && addgroup -S node \
-    && adduser -S -G node -h /app node
+    && addgroup -g "$GID" node \
+    && adduser -D -u "$UID" -G node -h /app -s /sbin/nologin node
 COPY --from=deps /usr/local/bin/node /usr/local/bin/node
 ENV NODE_ENV=production
 WORKDIR /app

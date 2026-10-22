@@ -52,6 +52,8 @@ docker compose logs -f
 docker compose down
 ```
 
+The container runs as the non-root user `node`. On startup it takes ownership of `/app/db` and `/app/logs`, so bind mounts work regardless of the host directories' original owner.
+
 ## Docker Command
 
 ```bash
