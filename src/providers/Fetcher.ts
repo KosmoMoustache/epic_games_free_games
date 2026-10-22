@@ -1,3 +1,4 @@
+import { existsSync, readFileSync } from 'node:fs'
 import axios from 'axios'
 import type { z } from 'zod'
 import Logger from '../services/logger.ts'
@@ -35,5 +36,16 @@ export default abstract class Fetcher {
     params?: FetcherParams,
   ): Promise<z.infer<TSchema>> {
     return schema.parse(await this.get(url, params))
+  }
+
+  protected async getLocalData<TSchema extends z.ZodType>(
+    schema: TSchema,
+  ): Promise<z.infer<TSchema>> {
+    const provider = this.constructor.name.replace(/Fetcher$/, '').toLowerCase()
+    const filename = `./${provider}LocalData.json`
+    if (!existsSync(filename)) throw new Error(`${filename} file is missing`)
+    const data = JSON.parse(readFileSync(filename, 'utf-8'))
+
+    return schema.parse(data)
   }
 }
