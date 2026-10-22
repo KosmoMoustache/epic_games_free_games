@@ -22,7 +22,7 @@ interface DiscordWebhookEmbeds extends Partial<ImageEmbed> {
   description?: string
   color?: string
   footer?: {
-    text: string | Date
+    text: string | Temporal.Instant
   }
   timestamp?: string
 }
@@ -106,7 +106,7 @@ export default class WebhookBuilder {
           title: this.#title,
           description: this.#description,
           url: this.#url,
-          timestamp: new Date().toISOString(),
+          timestamp: Temporal.Now.instant().toString(),
         },
       ],
       components: this.#components.map(component => {
@@ -200,8 +200,8 @@ export default class WebhookBuilder {
 
   static formatDescription(
     title: string,
-    date_from: Date,
-    date_to: Date,
+    date_from: Temporal.Instant,
+    date_to: Temporal.Instant,
     pageSlug?: string,
   ): string {
     return `**${title}**: du ${discordTimestamp(

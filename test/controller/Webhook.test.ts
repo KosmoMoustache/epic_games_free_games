@@ -136,8 +136,8 @@ suite('WebhookBuilder', { skip: false }, () => {
 
   test('(formatDescription) should format description with two dates', () => {
     const title = 'Game Title'
-    const date1 = new Date('2023-01-01')
-    const date2 = new Date('2023-12-31')
+    const date1 = Temporal.Instant.from('2023-01-01T00:00:00Z')
+    const date2 = Temporal.Instant.from('2023-12-31T00:00:00Z')
     const r = WebhookBuilder.formatDescription(title, date1, date2)
     assert.strictEqual(
       r,

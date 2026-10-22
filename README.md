@@ -11,19 +11,21 @@ Send a webhook similar to the following:
 - [Requirements](#requirements)
 - [Usage](#usage)
 - [Environment](#environment)
-- [Example using a cronjob and nvm](#example-using-a-cronjob-and-nvm)
+- [Example using a cronjob and mise](#example-using-a-cronjob-and-mise)
 - [License](#license)
 
 ## Requirements
 
-- node@>=24
+- node@>=26
+- [mise](https://mise.jdx.dev/)
 
 ## Usage
 
-First, clone the repo via git and install dependencies
+First, clone the repo via git and install the tools and dependencies
 
 ```bash
 git clone https://github.com/KosmoMoustache/epic_games_free_games.git
+mise install
 pnpm install
 ```
 
@@ -41,8 +43,9 @@ node ./src/index.ts
 | UPTIME_URL  | none (optional)  | The URL to monitor the application's uptime.used.                                                                                                                       |
 | LOG_LEVEL   | info             | The log level. Accept `debug`, `info`, `warn` and `error`.                                                                                                              |
 | USE_CACHE   | false            | If the application should use a file (./freeGamesPromotions.json) as the api instead of calling epic games' server. Should only be used when testing and/or developing  |
+| LOCALES     | en-GB            | The BCP 47 locale used to format dates (e.g. `fr-FR`).                                                                                                                  |
 
-## Example using a cronjob and nvm
+## Example using a cronjob and mise
 
 ```crontab
 0 17 * * * export NODE_ENV='production'; export PATH_TO='path/to/the/project'; cd $PATH_TO; (. ./crontab.en.sh; ./start.sh >> $PATH_TO/logs/cron-`date +\%Y-\%m`.log; )

@@ -2,7 +2,7 @@ import type Database from '../../controller/Database.ts'
 import WebhookBuilder from '../../controller/Webhook.ts'
 import ActionRowComponent from '../../controller/webhook/ActionRowComponent.ts'
 import ButtonComponent from '../../controller/webhook/ButtonComponent.ts'
-import { getUnixTimestamp } from '../../helpers/index.ts'
+import { getEpochMillis } from '../../helpers/index.ts'
 import { get } from '../../services/env.ts'
 import Logger from '../../services/logger.ts'
 import {
@@ -50,7 +50,7 @@ export default class EpicProvider extends GameProvider {
           game_name: element.title,
           pub_status: PubStatus.NONE,
           in_future: element.getPromotionStatus() === PromotionStatus.UPCOMING,
-          end_date: getUnixTimestamp(
+          end_date: getEpochMillis(
             element.promotions.now?.endDate ||
               element.promotions.upcoming?.endDate,
           ),

@@ -15,10 +15,8 @@ const defaultLogger = [
   }),
 ]
 
-const rotation_filename = () => {
-  const a = new Date().toISOString().split('T')[0]
-  return a?.slice(0, a.length - 3)
-}
+const rotation_filename = () =>
+  Temporal.Now.plainDateISO().toString().slice(0, 7)
 
 const baseLogger = winston.createLogger({
   transports: [
