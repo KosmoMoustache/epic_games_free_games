@@ -60,7 +60,7 @@ jobs:
   docker:
     name: Build and publish Docker image
     needs: [prepare, test]
-    uses: ./.github/workflows/docker.yml
+    uses: ./.github/workflows/docker-build.yml
     permissions:
       contents: read
       packages: write
