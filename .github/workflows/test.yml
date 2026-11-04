@@ -12,6 +12,8 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    env:
+      WEBHOOK_URL: https://example.com/webhook
 
     steps:
       - name: Checkout
